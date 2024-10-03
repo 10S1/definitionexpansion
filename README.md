@@ -14,8 +14,6 @@ The sTeX version works on SMGloM modules. Their content needs to be preprocessed
    + The Grammatical Framework executable & grammars: https://www.grammaticalframework.org/download/index-3.11.html
     
    * The Preprocessor executable: https://gitos.rrze.fau.de/voll-ki/fau/system/relocalization/
-    
-   * The SMGloM folder: https://gl.mathhub.info/smglom
 
 
 2. In `sTeX\definitionExpander.py`:
@@ -23,7 +21,13 @@ The sTeX version works on SMGloM modules. Their content needs to be preprocessed
    + Change the paths to the paths of your installations.
    
    * Change `symname_uri` to the URI of the definition and `statement_id_uri` to the URI of the statement (= the text, in which you want to replace the definition). The URIs refer to paragraphs in SMGloM modules.
-  
+
+
+3. For `coverageEvaluator.py`:
+   * Download the SMGloM folder: https://gl.mathhub.info/smglom
+   * Change the paths in `coverageEvaluator.py` to the paths of your installations.
+
+
 
 ## Usage of SHTML version
 
