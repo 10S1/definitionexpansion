@@ -21,7 +21,7 @@ The sTeX version works on SMGloM modules. Their content needs to be preprocessed
 2. In `sTeX\definitionExpander.py`:
 
    + Change the paths to the paths of your installations.
-     
+   
    * Change `symname_uri` to the URI of the definition and `statement_id_uri` to the URI of the statement (= the text, in which you want to replace the definition). The URIs refer to paragraphs in SMGloM modules.
   
 
