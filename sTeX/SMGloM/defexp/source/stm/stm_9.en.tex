@@ -1,0 +1,16 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{stm_9}
+  \importmodule{def?surjective}
+  \importmodule{def?powerset}
+  
+  \begin{sassertion}[id=stm-9]
+    \vardef{Xvar}{X}
+    \vardef{fvar}[args=1]{\maincom{f}\dobrackets{#1}}
+    %
+    There exists no \sn{surjective} \sn{function}
+    $\fun{\fvar!}{\Xvar}{\powerset{\Xvar}}$.
+  \end{sassertion}
+\end{smodule}
+\end{document}

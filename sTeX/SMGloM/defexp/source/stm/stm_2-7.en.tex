@@ -1,0 +1,16 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{stm_2-7}
+  \importmodule{def?injective}
+  \importmodule{def?powerset}
+
+  \begin{sassertion}[id=stm-2.7]
+    \vardef{Avar}{A}
+    \vardef{fvar}[args=1]{\maincom{f}\dobrackets{#1}}
+    %
+    Thus we can choose an \sn{injective} \sn{function}
+    $\fun{\fvar!}{\Avar}{\powerset{\Avar}}$.
+  \end{sassertion}
+\end{smodule}
+\end{document}

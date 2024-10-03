@@ -1,0 +1,20 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{continuous}
+  \importmodule[smglom/sets]{mod?image}
+  \symdecl*{continuous}
+  \symdecl*{open}
+  
+  \begin{sdefinition}
+    \vardef{Avar}{A}
+    \vardef{Bvar}{B}
+    \vardef{fvar}{f}
+    \vardef{Uvar}{U}
+    %
+    $\fun{\fvar}{\Avar}{\Bvar}$ is \definame{continuous} iff
+    \definiens[continous]{$\PreImage{\fvar}{\Uvar}$ is \sn{open} in $\Avar$ for
+    every \sn{open}$ \sseteq{\Uvar}{\Bvar}$}.
+  \end{sdefinition}
+\end{smodule}
+\end{document}

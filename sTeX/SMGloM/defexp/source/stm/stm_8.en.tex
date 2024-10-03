@@ -1,0 +1,17 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{stm_8}
+  \importmodule{def?union}
+  \importmodule[smglom/sets]{mod?image}
+  
+  \begin{sassertion}[id=stm-8]
+    \vardef{Avar}{A}
+    \vardef{Bvar}{B}
+    \vardef{Cvar}{C}
+    \vardef{fvar}[args=1]{\maincom{f}\dobrackets{#1}}
+    %
+    Define $\defeq{\Cvar}{\Image{\fvar!}{\union{\Avar,\Bvar}}}$.
+  \end{sassertion}
+\end{smodule}
+\end{document}

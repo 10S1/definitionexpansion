@@ -1,0 +1,25 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{consistent}
+  \importmodule[smglom/logic]{mod?derivation}
+  \importmodule[smglom/logic]{mod?bool}
+  \symdecl*{theory}
+  \symdecl*{consistent}
+  \symdecl*{inconsistent}
+
+  \begin{sdefinition}
+    \vardef{Tvar}{T}
+    %
+    A \sn{theory} $\Tvar$ is \definame{consistent} iff
+    \definiens[consistent]{it is wrong that $\derives{\Tvar}{\semfalse}$}.
+  \end{sdefinition}
+
+  \begin{sdefinition}
+    \vardef{Tvar}{T}
+    %
+    A \sn{theory} $\Tvar$ is \definame{inconsistent} iff
+    \definiens[consistent]{$\Tvar$ is not \sn{consistent}}.
+  \end{sdefinition}
+\end{smodule}
+\end{document}

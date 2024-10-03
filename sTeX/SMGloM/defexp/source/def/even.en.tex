@@ -1,0 +1,16 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{even}
+  \importmodule[smglom/arithmetics]{mod?intarith}
+  \symdecl*{even}
+  \symdecl*{divisible}
+
+  \begin{sdefinition}
+    \vardef{nvar}{n}
+    %
+    $\nvar$ is \definame{even} iff \definiens[even]{$\nvar$ is \sn{divisible} by
+    $2$}.
+  \end{sdefinition}
+\end{smodule}
+\end{document}

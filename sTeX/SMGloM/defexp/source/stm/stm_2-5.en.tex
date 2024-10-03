@@ -1,0 +1,16 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{stm_2-5}
+  \importmodule{def?consistent}
+  \importmodule{def?countable}
+  \symdecl*{model}
+  \symdef{ZFC}{\textsf{ZFC}}
+
+  \begin{sassertion}[id=stm-2.5]
+    \vardef{Xvar}{X}
+    %
+    If $\ZFC$ is \sn{consistent} then $\ZFC$ has a \sn{countable} \sn{model}.
+  \end{sassertion}
+\end{smodule}
+\end{document}

@@ -1,0 +1,15 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{powerset}
+  \importmodule[smglom/sets]{mod?subsupset}
+  \symdef{powerset}[name=powerset,args=1]{\maincomp{\mathfrak P}\dobrackets{#1}}
+
+  \begin{sdefinition}
+    \vardef{Xvar}{X}
+    %
+    The \definame{powerset} of $\Xvar$ is \definiens[powerset]{the \sn{set} of
+    all \sns{subset} of $\Xvar$}.
+  \end{sdefinition}
+\end{smodule}
+\end{document}

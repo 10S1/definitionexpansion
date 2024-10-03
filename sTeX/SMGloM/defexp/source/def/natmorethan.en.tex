@@ -1,0 +1,19 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{natmorethan}
+  \importmodule[smglom/arithmetics]{mod?intarith}
+  \importmodule[smglom/arithmetics]{mod?natarith}
+  \symdef{natmorethan}[args=2]{#1\mathrel{\maincomp>}#2}
+
+  \begin{sdefinition}[for=natmorethan]
+    \vardef{nvar}{n}
+    \vardef{mvar}{m}
+    \vardef{kvar}{k}
+    %
+    $\defnotation{\natmorethan{\nvar}{\mvar}}$ iff \definiens[natmorethan]{there
+    exists a \sn{intarith?positive} \sn{integer} $\kvar$ such that
+    $\eq{\natplus{\mvar,\kvar},\nvar}$}.
+  \end{sdefinition}
+\end{smodule}
+\end{document}

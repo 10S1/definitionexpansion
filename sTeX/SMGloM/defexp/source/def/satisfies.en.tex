@@ -1,0 +1,17 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{satisfies}
+  \importmodule[smglom/arithmetics]{mod?intarith}
+  \symdecl*{satisfies}
+  \symdef{psat}[args=2]{#1\mathrel{\maincomp\vDash}#2}
+
+  \begin{sdefinition}
+    \vardef{Ivar}{\mathcal I}
+    \vardef{Bvar}{B}
+    %
+    $\Ivar$ \definame{satisfies} $\Bvar$ iff
+    \definiens[satisfies]{$\psat{\Ivar}{\Bvar}$}.
+  \end{sdefinition}
+\end{smodule}
+\end{document}

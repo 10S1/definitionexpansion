@@ -1,0 +1,17 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{countable}
+  \importmodule[smglom/sets]{mod?injective}
+  \importmodule[smglom/arithmetics]{mod?naturalnumbers}
+  \symdecl*{countable}
+
+  \begin{sdefinition}
+    \vardef{Xvar}{X}
+    \vardef{fvar}{f}
+    %
+    A \sn{set} $\Xvar$ is \definame{countable} iff \definiens[countable]{there
+    is an \sn{injective} \sn{function} $\fun{\fvar}{\NaturalNumbers}{\Xvar}$}.
+  \end{sdefinition}
+\end{smodule}
+\end{document}

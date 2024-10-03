@@ -1,0 +1,18 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{surjective}
+  \importmodule[smglom/sets]{mod?functions}
+  \symdecl*{surjective}
+  
+  \begin{sdefinition}
+    \vardef{Avar}{A}
+    \vardef{Bvar}{B}
+    \vardef{fvar}[args=1]{\maincomp{f}\dobrackets{#1}}
+    %
+    A \sn{function} $\fun{\fvar!}{\Avar}{\Bvar}$ is \definame{surjective} iff
+    \definiens[surjective]{every \sn{element} of $\Bvar$ is a
+    \sn{functions?value} of $\fvar!$}.
+  \end{sdefinition}
+\end{smodule}
+\end{document}

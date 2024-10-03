@@ -1,0 +1,20 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{injective}
+  \importmodule[smglom/sets]{mod?functions}
+  \symdecl*{injective}
+  
+  \begin{sdefinition}
+    \vardef{Avar}{A}
+    \vardef{Bvar}{B}
+    \vardef{fvar}[args=1]{\maincomp{f}\dobrackets{#1}}
+    \vardef{bvar}{b}
+    \vardef{bprimevar}{b'}
+    %
+    $\fun{\fvar!}{\Avar}{\Bvar}$ is \definame{injective} iff
+    \definiens[injective]{for all $\inset{\bvar,\bprimevar}{\Bvar}$ if
+    $\eq{\fvar{\bvar},\fvar{\bprimevar}}$ then $\eq{\bvar,\bprimevar}$}.
+  \end{sdefinition}
+\end{smodule}
+\end{document}

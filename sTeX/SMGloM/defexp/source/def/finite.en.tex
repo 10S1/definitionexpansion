@@ -1,0 +1,16 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{finite}
+  \importmodule{def?injective}
+  \importmodule[smglom/arithmetics]{mod?naturalnumbers}
+  \symdecl*{finite}
+
+  \begin{sdefinition}
+    \vardef{xvar}{x}
+    %
+    $\xvar$ is \definame{finite} iff \definiens[finite]{there exists no
+    \sn{injective} \sn{function} from $\NaturalNumbers$ to $\xvar$}.
+  \end{sdefinition}
+\end{smodule}
+\end{document}

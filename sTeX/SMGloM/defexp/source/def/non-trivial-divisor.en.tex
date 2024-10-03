@@ -1,0 +1,17 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{non-trivial-divisor}
+  \importmodule[smglom/arithmetics]{mod?divisor}
+  \symdecl*{non-trivial divisor}
+
+  \begin{sdefinition}
+    \vardef{nvar}{n}
+    \vardef{mvar}{m}
+    %
+    A \definame{non-trivial divisor} of $\nvar$ is a
+    \definiens[non-trivial divisor]{\sn{divisor} $\mvar$ of $\nvar$ such that
+    $\notequal{\mvar}{\nvar}$ and $\notequal{\mvar}{1}$}.
+  \end{sdefinition}
+\end{smodule}
+\end{document}

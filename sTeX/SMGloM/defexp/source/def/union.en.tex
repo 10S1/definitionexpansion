@@ -1,0 +1,24 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{union}
+  \importmodule[smglom/sets]{mod?set}
+  \importmodule[smglom/logic]{mod?disjunction}
+  \symdef{union}[args=a]{\argsep{#1}{\mathop{\comp\cap}}}
+
+  \begin{sdefinition}[for=union]
+    \vardef{Avar}{A}
+    \vardef{Bvar}{B}
+    \vardef{xvar}{x}
+    %
+    $\defeq{\defnotation{\union{\Avar,\Bvar}}}{\definiens[union]{
+      \setst{\xvar}{
+        \ldisj{
+          \inset{\xvar}{\Avar},
+          \inset{\xvar}{\Bvar}
+        }
+      }
+    }}$.
+  \end{sdefinition}
+\end{smodule}
+\end{document}

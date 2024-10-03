@@ -1,0 +1,15 @@
+\documentclass{stex}
+\libinput{preamble}
+\begin{document}
+\begin{smodule}{prime}
+  \importmodule{def?non-trivial-divisor}
+  \symdecl*{prime}
+
+  \begin{sdefinition}
+    \vardef{nvar}{n}
+    %
+    $\nvar$ is \definame{prime} iff \definiens[prime]{$\intmorethan{\nvar}{1}$
+    and $\nvar$ has no \sn{non-trivial divisor}}.
+  \end{sdefinition}
+\end{smodule}
+\end{document}
