@@ -11,7 +11,7 @@ The sTeX version works on SMGloM modules. Their content needs to be preprocessed
 
 1. Download the necessary tools: 
 
-  * The Grammatical Framework executable & grammars: https://www.grammaticalframework.org/download/index-3.11.html
+  + The Grammatical Framework executable & grammars: https://www.grammaticalframework.org/download/index-3.11.html
     
   * The Preprocessor executable: https://gitos.rrze.fau.de/voll-ki/fau/system/relocalization/
     
@@ -29,7 +29,7 @@ The sTeX version works on SMGloM modules. Their content needs to be preprocessed
 
 1. Download the necessary tools: 
 
-  * The Grammatical Framework executable & grammars: https://www.grammaticalframework.org/download/index-3.11.html
+  + The Grammatical Framework executable & grammars: https://www.grammaticalframework.org/download/index-3.11.html
 
 2. In `SHTML\definitionExpander.py`:
 
