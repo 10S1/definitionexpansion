@@ -1,7 +1,7 @@
 import regex as re
 import json
 
-def escapeCmds(text):
+def escapeCmds(text: str) -> str:
     text = text.replace("\\omega", "\\\\omega")
     text = text.replace("\\natminus", "\\\\natminus")
     text = text.replace("\\infty", "\\\\infty")
@@ -31,7 +31,7 @@ def escapeCmds(text):
     #text = text.replace("\\", "\\\\")
     return text
 
-def makeNameGfConform(name):
+def makeNameGfConform(name: str) -> str:
     name = re.sub(r"\!", "Exlamation", name)
     name = re.sub(r"\?", "Questionmark", name)
     name = re.sub(r"\.", "Point", name)
@@ -47,7 +47,7 @@ def makeNameGfConform(name):
     name = re.sub(r"[^A-Za-z0-9]", "OtherSymbol", name) 
     return name
 
-def get_usedDefiniendums():
+def get_usedDefiniendums() -> list[str]:
     with open('definitionexpansion\Resources\definiendums.json', 'r', encoding='utf-8') as file:
         data = json.load(file)
 

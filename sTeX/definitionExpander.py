@@ -638,7 +638,7 @@ def expandDefinitions(definition, statement, definiendum, variablesDefinition, v
             return tree_result
 
 #Linearizes an AST to a sentence through the grammar, which got loaded in the Grammatical Framework shell.
-def linearizeTree(shell, tree):
+def linearizeTree(shell: gf.GFShellRaw, tree: GfAst) -> str:
     cmd_linearize = 'linearize ' + str(tree)
     linearizedTree = shell.handle_command(cmd_linearize)
     res_sentence = uppercase_first_letter(linearizedTree)
