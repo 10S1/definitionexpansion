@@ -5,11 +5,13 @@ import string
 import regex as re
 import shutil
 import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../Resources')))
 
 import subprocess
-import definitionexpansion.sTeX.grammarGenerator as grammarGenerator
-import definitionexpansion.Resources.gf as gf
-from definitionexpansion.Resources.gf_ast import GfAst
+import grammarGenerator
+import gf as gf
+from gf_ast import GfAst
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 
@@ -29,7 +31,7 @@ active_stexOutput = False
 
 ###----- Input ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 #Choose an example from FDE_examples.json or set input_definiendum, symname_uri and statement_id_uri directly.
-with open('FDE_examples.json', 'r') as file:
+with open('definitionexpansion\sTeX\FDE_examples.json', 'r') as file:
         FDE_example = json.load(file)
 VARIABLE_choosenExample = "2-5"
 
@@ -41,11 +43,11 @@ statement_id_uri = FDE_example[VARIABLE_choosenExample]["statement_id_uri"]
 
 
 ###----- Paths ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
-PATH_exe_preprocessor = shutil.which('relocate')
+PATH_exe_preprocessor = os.getenv('PP_EXE')
 if PATH_exe_preprocessor is None:
-    print("ERROR: Path to relecoate.exe not found. \nCheck whether the Preprocessor is installed and the environment variable is set.")
+    print("ERROR: Path to relocate.exe not found. \nCheck whether the Preprocessor is installed and the environment variable is set.")
 
-PATH_exe_gf = shutil.which('gf')
+PATH_exe_gf = os.getenv('GF_EXE')
 if PATH_exe_gf is None:
     print("ERROR: Path to gf.exe not found. \nCheck whether the Grammatical Framework is installed and the environment variable is set.")
 
