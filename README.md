@@ -14,18 +14,18 @@ The sTeX version works on SMGloM modules. Their content needs to be preprocessed
    1.1. Grammatical Framework: 
       * Go to https://www.grammaticalframework.org/download/index-3.11.html and install the Grammatical Framework. 
       * Add the PATH environment variable `GF_LIB_PATH`, which should refer to the installed Grammatical Framework folder.
-      * Add the PATH enviroment variable `GF_EXE`, which should refer to the `gf.exe` in the `gf_3.11`-folder in the installed Grammatical Framework folder.
+      * Add the path of `gf.exe` in the `gf_3.11`-folder in the installed Grammatical Framework folder to the PATH and to the enviroment variable `GF_EXE`.
     
    1.2. Preprocessor: 
       * Go to https://gitos.rrze.fau.de/voll-ki/fau/system/relocalization/ and either download or build `relocate.exe`.
-      * Add the PATH environment variable `PP_EXE`, which should refer to `relocate.exe`.
+      * Add the path of `relocate.exe` to the PATH and to the environment variable `PP_EXE`.
 
    1.3. sTeX:
       * Follow the instructions at https://github.com/slatex/sTeX?tab=readme-ov-file.
 
    1.4. SMGloM:
       * Create a new folder `MathHub`.
-      * Add the PATH environment variable `MATHHUB`, which should refer to the `MathHub` folder.
+      * Add the environment variable `MATHHUB`, which should refer to the `MathHub` folder.
       * Clone the repositories from https://gl.mathhub.info/smglom. 
          * For example: Install https://github.com/jfschaefer/stextools and execute `python -m pip install .`. (Maybe additonally necessary: `python -m pip install pylatexenc python-gitlab --user`)
 

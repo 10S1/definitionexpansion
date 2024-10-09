@@ -31,7 +31,7 @@ active_stexOutput = False
 
 ###----- Input ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 #Choose an example from FDE_examples.json or set input_definiendum, symname_uri and statement_id_uri directly.
-with open('definitionexpansion\sTeX\FDE_examples.json', 'r') as file:
+with open('sTeX\FDE_examples.json', 'r') as file:
         FDE_example = json.load(file)
 VARIABLE_choosenExample = "2-5"
 
