@@ -3,6 +3,8 @@ import json
 import random
 import string
 import regex as re
+import shutil
+import os
 
 import subprocess
 import definitionexpansion.sTeX.grammarGenerator as grammarGenerator
@@ -13,128 +15,65 @@ from definitionexpansion.Resources.gf_ast import GfAst
 
 
 ###----- Parameters -----------------------------------------------------------------------------------------------------------------------------------------------------------------------###
+#Length of the names, which are generated for new or renamed variables
 length_randomVariablenames = 20
+
+#If false: The output is the merged sentence.
+#If true: Additionally, a sTeX file gets generated.
+#   The generateds file is the file, in which the sentence, which Statement URI refers to, occurs. However, in the file
+#   the sentence itself is replaced by the new merged sentence and necessary commands from the Definition URI file are added.
 active_stexOutput = False
-VARIABLE_choosenExample = "2-5"
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 
 
 ###----- Input ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
-data_uris = {
-    "1": {
-        "input_definiendum": "positive",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?positive?positive",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_1.en?stm-1"
-    },
-    "2": {
-        "input_definiendum": "even",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?even?even",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_2.en?stm-2"
-    },
-    "3": {
-        "input_definiendum": "non-trivial divisor",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?non-trivial-divisor?non-trivial divisor",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_3.en?stm-3"
-    },
-    "4": {
-        "input_definiendum": "non-trivial divisor",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?pnon-trivial-divisorositive?non-trivial divisor",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_4.en?stm-4"
-    },
-    "5": {
-        "input_definiendum": "satisfies",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?satisfies?satisfies",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_5.en?stm-5"
-    },
-    "6": {
-        "input_definiendum": "powerset",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?powerset?powerset",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_6.en?stm-6"
-    },
-    "7": {
-        "input_definiendum": "non-trivial divisor",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?non-trivial-divisor?non-trivial divisor",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_7.en?stm-7"
-    },
-    "8": {
-        "input_definiendum": "union",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?union?union",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_8.en?stm-8"
-    },
-    "9": {
-        "input_definiendum": "surjective",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?surjective?surjective",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_9.en?stm-9"
-    },
-    "2-1": {
-        "input_definiendum": "non-empty",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?non-empty?non-empty",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_2-1.en?stm-2.1"
-    },
-    "2-2": {
-        "input_definiendum": "natmorethan",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?natmorethan?natmorethan",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_2-2.en?stm-2.2"
-    },
-    "2-3": {
-        "input_definiendum": "prime",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?prime?prime",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_2-3.en?stm-2.3"
-    },
-    "2-4": {
-        "input_definiendum": "countinuous",  #Misspelling: "continuous"?
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?countinuous?countinuous",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_2-4.en?stm-2.4"
-    },
-    "2-5": {
-        "input_definiendum": "consistent",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?consistent?consistent",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_2-5.en?stm-2.5"
-    },
-    "2-6": {
-        "input_definiendum": "countable",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?countable?countable",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_2-6.en?stm-2.6"
-    },
-    "2-7": {
-        "input_definiendum": "injective",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?injective?injective",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_2-7.en?stm-2.7"
-    },
-    "2-8": {
-        "input_definiendum": "finite",
-        "symname_uri": "http://mathhub.info/smglom/defexp/def?finite?finite",
-        "statement_id_uri": "http://mathhub.info/smglom/defexp/stm/stm_2-8.en?stm-2.8"
-    }
-}
-input_definiendum = data_uris[VARIABLE_choosenExample]["input_definiendum"]
-symname_uri = data_uris[VARIABLE_choosenExample]["symname_uri"]
-statement_id_uri = data_uris[VARIABLE_choosenExample]["statement_id_uri"]
+#Choose an example from FDE_examples.json or set input_definiendum, symname_uri and statement_id_uri directly.
+with open('FDE_examples.json', 'r') as file:
+        FDE_example = json.load(file)
+VARIABLE_choosenExample = "2-5"
+
+input_definiendum = FDE_example[VARIABLE_choosenExample]["input_definiendum"]
+symname_uri = FDE_example[VARIABLE_choosenExample]["symname_uri"]
+statement_id_uri = FDE_example[VARIABLE_choosenExample]["statement_id_uri"]
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 
 
 ###----- Paths ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
-PATH_gf_grammar = r'definitionexpansion/sTeX/Grammar/'
-basename = r"definitionexpansion\sTeX\Grammar\BaseGrammar"
-#Change to your paths:
-PATH_exe_preprocessor = r"...\Preprocessor\relocate.exe"
-PATH_exe_gf = '...\GrammaticalFramework\gf_3.11\gf.exe'
-PATH_dict_mathhub = r"...\sTeXDIR\MathHub"
+PATH_exe_preprocessor = shutil.which('relocate')
+if PATH_exe_preprocessor is None:
+    print("ERROR: Path to relecoate.exe not found. \nCheck whether the Preprocessor is installed and the environment variable is set.")
+
+PATH_exe_gf = shutil.which('gf')
+if PATH_exe_gf is None:
+    print("ERROR: Path to gf.exe not found. \nCheck whether the Grammatical Framework is installed and the environment variable is set.")
+
+PATH_dict_mathhub = os.getenv('MATHHUB')
+if (PATH_dict_mathhub is None) or (not os.path.isdir(PATH_dict_mathhub)):
+    print("ERROR: Path to MathHub not found. \nCheck whether the SMGloM is installed and the environment variable is set.")
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 
 
 ###----- Variables ------------------------------------------------------------------------------------------------------------------------------------------------------------------#-----###
+#Paths where the base grammar (= the grammar which gets extended by additonally generated rules) is placed.
+PATH_gf_grammar = r'definitionexpansion\sTeX/Grammar/'
+basename = r"definitionexpansion\sTeX\Grammar\BaseGrammar"
+
+#Variables which are introduced during merging or renamed.
 introducedVariables = []
-PATH_gf_concrGrammar = 'definitionexpansion/sTeX/Grammar\GEN_grammar_concr.gf'
+
+#Paths where the generated grammars will be placed.
+PATH_gf_concrGrammar = 'definitionexpansion\sTeX\Grammar\GEN_grammar_concr.gf'
 PATH_gf_abstrGrammar = 'definitionexpansion\sTeX\Grammar\GEN_grammar_abstr.gf'
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 
 
 ###----- Irrelevant Functions -------------------------------------------------------------------------------------------------------------------------------------------------------------###
+def flatten_list_of_lists(nested_lists):
+    return [item for sublist in nested_lists for item in sublist]
 def lowercase_first_letter(s: str) -> str:
     if s and s[0].isupper():
         return s[0].lower() + s[1:]
@@ -143,6 +82,15 @@ def uppercase_first_letter(s: str) -> str:
     if s and s[0].islower():
         return s[0].upper() + s[1:]
     return s
+def read_file_with_fallback(file_path):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    except UnicodeDecodeError:
+        with open(file_path, 'r', encoding='ISO-8859-1') as f:
+            return f.read()
+
+#Replaces symbols, which are not allowed to appear in the names of the GF rules.
 def makeNameGfConform(name):
     name = re.sub(r"\!", "Exlamation", name)
     name = re.sub(r"\?", "Questionmark", name)
@@ -154,20 +102,16 @@ def makeNameGfConform(name):
     name = re.sub(r"\]", "RightSquareBracket", name)
     name = re.sub(r"\(", "LeftParenthesis", name)
     name = re.sub(r"\)", "RightParenthesis", name)
-    name = re.sub(r"\ ", "Space", name)  # Technically, you don't need to escape space
+    name = re.sub(r"\ ", "Space", name)
     name = re.sub(r"\\", "Slash", name)
     name = re.sub(r"[^A-Za-z0-9]", "OtherSymbol", name) 
     return name
 
-def randomLetters(number):
-    return ''.join(random.choice(string.ascii_lowercase) for _ in range(number))
-
-def flatten_list_of_lists(nested_lists):
-    return [item for sublist in nested_lists for item in sublist]
-
+#Adds spaces for postprocessing the result sentence.
 def format_math_expressions(text):
     return re.sub(r'\$(.*?)\$', lambda m: "$" + m.group(1).replace(" ", "") + "$", text)
 
+#Adds spaces around dollar signs for postprocessing the result sentence.
 def adjust_dollar_sign_spacing(sentence):
     parts = sentence.split('$')
     new_sentence = ''
@@ -194,14 +138,7 @@ def adjust_dollar_sign_spacing(sentence):
 
     return new_sentence
 
-def read_file_with_fallback(file_path):
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            return f.read()
-    except UnicodeDecodeError:
-        with open(file_path, 'r', encoding='ISO-8859-1') as f:
-            return f.read()
-
+#Generates a string in the format of: "X_" + <number>
 def random_variable_name(number):
     return 'X_' + ''.join(random.choice(string.digits) for _ in range(number))
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
@@ -209,6 +146,7 @@ def random_variable_name(number):
 
 
 ###----- Helper Functions -----------------------------------------------------------------------------------------------------------------------------------------------------------------###
+#Renames variables in the definition sentence/AST if they also appear in the statement sentence/AST.
 def alphaRenamingOfVariables(variables_definition, variables_statement, tree_definition):
     newIntroducedVariables = []
     for var in variables_definition:
@@ -219,6 +157,7 @@ def alphaRenamingOfVariables(variables_definition, variables_statement, tree_def
             newIntroducedVariables.append(newVar)
     return [tree_definition, newIntroducedVariables]
 
+#Extracts variables out of an AST if they occur after a preposition.
 def get_varsOfPrepositions(ast):
     vars = []
     match ast:
@@ -237,6 +176,7 @@ def get_varsOfPrepositions(ast):
 
     return vars
 
+#Extracts variables and their category (e.g. "main", "from", "to", ...) out of the definitions AST.
 def get_assignedVariables_definition(ast, definiendum):
     vars = []
     vars.extend(get_varsOfPrepositions(ast))
@@ -261,6 +201,7 @@ def get_assignedVariables_definition(ast, definiendum):
 
     return vars
 
+#Extracts variables and their category (e.g. "main", "from", "to", ...) out of the statement AST.
 def get_assignedVariables_statement(ast, definiendum):
     vars = []
     vars.extend(get_varsOfPrepositions(ast))
@@ -308,6 +249,7 @@ def get_assignedVariables_statement(ast, definiendum):
 
     return vars
 
+#The variables in the statement and the definition, which can be assigned to each other, get accordingly replaced in the definition AST.
 def assignedVariableRenaming(tree_replacement, tree_definition_without_definiens, tree_statement, definiendum):
     replaceVar_dict = {}   #E.g. like: ["main", "xVar"], ["from", "yVar"]
 
@@ -336,6 +278,7 @@ def assignedVariableRenaming(tree_replacement, tree_definition_without_definiens
     print("\nreplaceVar_dict: " + str(replaceVar_dict))
     return [tree_replacement, vars_unassigned]
 
+#If there is a noun in the statement sentence, which is [connected to] the definiendum, a variable gets introduced after it.
 def introduceVariables(ast, definiendum):
     introducedVars = []
     tree_statement = ast
@@ -369,7 +312,9 @@ def introduceVariables(ast, definiendum):
 
     return [tree_statement, introducedVars]
 
-#Preprocessor stuff
+
+#PREPROCESSOR STUFF
+#Uses the Preprocessor to add spaces to a normal sTeX sentence, so it can be parsed by the Grammatical Framework.
 def pp_preprocessString(input_string):
     executable_path = PATH_exe_preprocessor
     command = [executable_path, '--mode=gf', f'--input={input_string}']
@@ -380,6 +325,7 @@ def pp_preprocessString(input_string):
         print(f"Error: {e.stderr}")
         return None
 
+#Uses the Preprocessor to fetch the used variables and commands, which could be used in the SMGloM files, which the URIs refer to.
 def pp_getInformation(symname_uri, statement_id_uri):
     executable_path = PATH_exe_preprocessor
     command = [executable_path, '--mode=def-exp', f'--mathhub={PATH_dict_mathhub}', f'--symname={symname_uri}', f'--statement={statement_id_uri}']
@@ -390,6 +336,7 @@ def pp_getInformation(symname_uri, statement_id_uri):
         print(f"Error: {e.stderr}")
         return None
 
+#Brings a normal sentence into a format, which is parsable by the generated grammar, which is used in the Grammatical Framework.
 def make_sentence_GfConform(sentence):
     sentence_pp = pp_preprocessString(sentence)
     sentence_pp = lowercase_first_letter(sentence_pp).replace("\\", "\\\\")
@@ -400,6 +347,7 @@ def make_sentence_GfConform(sentence):
     sentence_pp = lowercase_first_letter(sentence_pp)
     return sentence_pp
 
+#Brings a sentence, which is in a format, which is parsable by the Grammatical Framework, back to a normal format.
 def postprocessSentence(sentence):
     sentence = (uppercase_first_letter(sentence).replace("\\\\", "\\")) + "."
     sentence = sentence.replace("{ ", "{")
@@ -408,6 +356,8 @@ def postprocessSentence(sentence):
     sentence = format_math_expressions(sentence)
     return sentence
 
+#Brings a sentence, which is in a format, which is parsable by the Grammatical Framework, back to a normal format.
+#   Special case, which is necessary for finding the sentences, which need to be replaced while generating the sTeX file.
 def postprocessSentence_onlyremoveSpaces(sentence):
     sentence = sentence.replace("{ ", "{")
     sentence = sentence.replace(" {", "{")
@@ -418,7 +368,9 @@ def postprocessSentence_onlyremoveSpaces(sentence):
     sentence = sentence.strip()
     return sentence
 
-#Tree methods
+
+#AST STUFF
+#Generates the AST, which will replace the delete AST in the statement AST.
 def get_replacementTree(deletedTree, definiensContentTree, definiendumAst):
     deletedAst = GfAst.from_str(deletedTree)
     definiensContentAst = GfAst.from_str(definiensContentTree)
@@ -449,6 +401,7 @@ def get_replacementTree(deletedTree, definiensContentTree, definiendumAst):
     replacementTree = GfAst.to_str(replacementAst)
     return replacementTree
 
+#Extracts the AST of the definiendum and the part of speech category of the definiendum.
 def get_definiendumAST_definiendumType(ast, definiendum):
     definiendum = makeNameGfConform(definiendum)
     match ast:
@@ -466,6 +419,7 @@ def get_definiendumAST_definiendumType(ast, definiendum):
             if res is not None: return res
     return None                                                            
 
+#Extracts the AST in the definiens command of the definiendum out of the definition AST.
 def get_definiensContentTree(ast_definition, definiendum, definiendum_type):
     # E.g.: "$ \\\\nvar $ is \\\\definame { positive } iff \\\\definiens [ positive ] { $ \\\\intmorethan { \\\\nvar } { 0 } $ } ."
     definiendum = makeNameGfConform(definiendum)
@@ -483,6 +437,8 @@ def get_definiensContentTree(ast_definition, definiendum, definiendum_type):
             if res is not None: return res
     return None
 
+#Returns the tree, which will be removed out of the statement AST (usually is or contains the definiendum) and the  part of 
+#speech category of the definiendum and the AST of the definiendum.
 def get_deleteTree_definiendumType_definiendumAST(ast_statement, definiendum_gfCon):
     definienumType = None
     match ast_statement:
@@ -501,13 +457,13 @@ def get_deleteTree_definiendumType_definiendumAST(ast_statement, definiendum_gfC
                 if defi_1 == definiendumAST:
                     return [GfAst("UseCl", [temp_1, pol_1, GfAst("PredVP", [np_1, GfAst("UseComp", [GfAst("PositA", [defi_1])])])]).to_str(), definienumType, definiendumAST.to_str()]
 
-        # case GfAst("AdjCN", [GfAst("PositA", [defi_2]), rest]):
-        #     print("TEST3")
-        #     definiendumAST_definiendumType2 = get_definiendumAST_definiendumType(defi_2, definiendum_gfCon)
-        #     if definiendumAST_definiendumType2 != None:
-        #         [definiendumAST, definienumType] = definiendumAST_definiendumType2
-        #         if defi_2 == definiendumAST:
-        #             return [GfAst("AdjCN", [GfAst("PositA", [defi_2]), rest]).to_str(), definienumType, definiendumAST.to_str()]
+        case GfAst("AdjCN", [GfAst("PositA", [defi_2]), rest]):
+            print("TEST3")
+            definiendumAST_definiendumType2 = get_definiendumAST_definiendumType(defi_2, definiendum_gfCon)
+            if definiendumAST_definiendumType2 != None:
+                [definiendumAST, definienumType] = definiendumAST_definiendumType2
+                if defi_2 == definiendumAST:
+                    return [GfAst("AdjCN", [GfAst("PositA", [defi_2]), rest]).to_str(), definienumType, definiendumAST.to_str()]
 
         case GfAst('BlaBla', [bla1]):
             [definiendumTree, definienumType] = get_definiendumAST_definiendumType(bla1, definiendum_gfCon)
@@ -528,7 +484,9 @@ def get_deleteTree_definiendumType_definiendumAST(ast_statement, definiendum_gfC
             if res is not None: return res
     return None 
 
-# sTeX stuff
+
+#sTeX STUFF
+#Extracts the importmodule, usemodel and symdecl lines out of a sTeX file.
 def extract_latex_commands(latex_str):
     output = []
 
@@ -543,7 +501,7 @@ def extract_latex_commands(latex_str):
         output.append("\\vardef{" + arg1 + "}{" + arg2 + "}")
 
     # Pattern to match \usemodel and \importmodule commands
-    command_pattern = r'\\(importmodule|usemodel|symdelc\*)(\[[^\]]*\])?\{([^}]+)\}'
+    command_pattern = r'\\(importmodule|usemodel|symdecl\*)(\[[^\]]*\])?\{([^}]+)\}'
     # Find all matches in the input string
     matches = re.findall(command_pattern, latex_str)
     # Create the formatted output list
@@ -556,6 +514,8 @@ def extract_latex_commands(latex_str):
 
     return output
 
+#Generates a sTeX file, which is the statement sTeX file, in which the original sentences are replaced by the merged sentences 
+#and additonal lines are added for newly introduced variables and the relevant lines from the definition sTeX file are added.
 def generate_stexFile(input_stex_definition, input_stex_statement, replacedSentences, newVariables):
     output_stex = input_stex_statement
     newLines = ""
@@ -590,6 +550,7 @@ def generate_stexFile(input_stex_definition, input_stex_statement, replacedSente
 
     return output_stex
 
+#Fetches the content of the SMGloM file, in which the URI appears.
 def get_stexfile(uri):
     file_path = uri.replace("/mod", "/source/mod")
     file_path = file_path.replace("http://mathhub.info/smglom", "bachelor_arbeit/Resources/smglomRessources/smglom")
@@ -600,12 +561,13 @@ def get_stexfile(uri):
     file_path = file_path.replace("\defexp", "\defexp\source\def")
     file_content = read_file_with_fallback(file_path)
     return file_content
-
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 
 
 ###----- Functions ------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
+#Replaces the definiendum in the statement by the definiens content in the definition while keeping a correct sytax and adapting 
+#the variables. Returns an AST.
 def expandDefinitions(definition, statement, definiendum, variablesDefinition, variablesStatement, shell):
     #FROM STATEMENT: Get statement sentence trees
     cmd_parseStatement = 'parse "' + statement + '"'
@@ -673,6 +635,7 @@ def expandDefinitions(definition, statement, definiendum, variablesDefinition, v
             
             return tree_result
 
+#Linearizes an AST to a sentence through the grammar, which got loaded in the Grammatical Framework shell.
 def linearizeTree(shell, tree):
     cmd_linearize = 'linearize ' + str(tree)
     linearizedTree = shell.handle_command(cmd_linearize)
@@ -683,14 +646,14 @@ def linearizeTree(shell, tree):
 
 
 ###----- Main -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
-#Input: Definition, Statement and Input
+#Input: Definition, Statement and Definiendum
 def main(symname_uri, statement_id_uri, definiendum):
 
-    #HANDLE INPUT
+    #HANDLE THE INPUT OF THE PREPROCESSOR
     input_str = pp_getInformation(symname_uri, statement_id_uri)
     input = json.loads(input_str)
 
-    # Initialize variables
+    #Initialize variables
     input_variables_definition = []
     input_variables_statement = []
     og_definition = None
