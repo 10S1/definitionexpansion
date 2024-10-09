@@ -92,8 +92,8 @@ def read_file_with_fallback(file_path):
         with open(file_path, 'r', encoding='ISO-8859-1') as f:
             return f.read()
 
-#Replaces symbols, which are not allowed to appear in the names of the GF rules.
 def makeNameGfConform(name):
+    """Replaces symbols, which are not allowed to appear in the names of the GF rules."""
     name = re.sub(r"\!", "Exlamation", name)
     name = re.sub(r"\?", "Questionmark", name)
     name = re.sub(r"\.", "Point", name)
@@ -109,12 +109,12 @@ def makeNameGfConform(name):
     name = re.sub(r"[^A-Za-z0-9]", "OtherSymbol", name) 
     return name
 
-#Adds spaces for postprocessing the result sentence.
 def format_math_expressions(text):
+    """Adds spaces for postprocessing the result sentence."""
     return re.sub(r'\$(.*?)\$', lambda m: "$" + m.group(1).replace(" ", "") + "$", text)
 
-#Adds spaces around dollar signs for postprocessing the result sentence.
 def adjust_dollar_sign_spacing(sentence):
+    """Adds spaces around dollar signs for postprocessing the result sentence."""
     parts = sentence.split('$')
     new_sentence = ''
 
@@ -140,16 +140,16 @@ def adjust_dollar_sign_spacing(sentence):
 
     return new_sentence
 
-#Generates a string in the format of: "X_" + <number>
 def random_variable_name(number):
+    """Generates a string in the format of: "X_" + <digit><digit>...<digit>"""
     return 'X_' + ''.join(random.choice(string.digits) for _ in range(number))
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 
 
 ###----- Helper Functions -----------------------------------------------------------------------------------------------------------------------------------------------------------------###
-#Renames variables in the definition sentence/AST if they also appear in the statement sentence/AST.
 def alphaRenamingOfVariables(variables_definition, variables_statement, tree_definition):
+    """Renames variables in the definition sentence/AST if they also appear in the statement sentence/AST."""
     newIntroducedVariables = []
     for var in variables_definition:
         if var in variables_statement:
@@ -159,8 +159,8 @@ def alphaRenamingOfVariables(variables_definition, variables_statement, tree_def
             newIntroducedVariables.append(newVar)
     return [tree_definition, newIntroducedVariables]
 
-#Extracts variables out of an AST if they occur after a preposition.
 def get_varsOfPrepositions(ast):
+    """Extracts variables out of an AST if they occur after a preposition."""
     vars = []
     match ast:
         case GfAst("PrepNP", [preposition_1, np_1]):
@@ -178,8 +178,8 @@ def get_varsOfPrepositions(ast):
 
     return vars
 
-#Extracts variables and their category (e.g. "main", "from", "to", ...) out of the definitions AST.
 def get_assignedVariables_definition(ast, definiendum):
+    """Extracts variables and their category (e.g. "main", "from", "to", ...) out of the definitions AST."""
     vars = []
     vars.extend(get_varsOfPrepositions(ast))
     match ast:
@@ -203,8 +203,8 @@ def get_assignedVariables_definition(ast, definiendum):
 
     return vars
 
-#Extracts variables and their category (e.g. "main", "from", "to", ...) out of the statement AST.
 def get_assignedVariables_statement(ast, definiendum):
+    """Extracts variables and their category (e.g. "main", "from", "to", ...) out of the statement AST."""
     vars = []
     vars.extend(get_varsOfPrepositions(ast))
     match ast:
@@ -251,8 +251,8 @@ def get_assignedVariables_statement(ast, definiendum):
 
     return vars
 
-#The variables in the statement and the definition, which can be assigned to each other, get accordingly replaced in the definition AST.
 def assignedVariableRenaming(tree_replacement, tree_definition_without_definiens, tree_statement, definiendum):
+    """The variables in the statement and the definition, which can be assigned to each other, get accordingly replaced in the definition AST."""
     replaceVar_dict = {}   #E.g. like: ["main", "xVar"], ["from", "yVar"]
 
     ast_definition = GfAst.from_str(tree_definition_without_definiens)
@@ -280,8 +280,8 @@ def assignedVariableRenaming(tree_replacement, tree_definition_without_definiens
     print("\nreplaceVar_dict: " + str(replaceVar_dict))
     return [tree_replacement, vars_unassigned]
 
-#If there is a noun in the statement sentence, which is [connected to] the definiendum, a variable gets introduced after it.
 def introduceVariables(ast, definiendum):
+    """If there is a noun in the statement sentence, which is [connected to] the definiendum, a variable gets introduced after it."""
     introducedVars = []
     tree_statement = ast
     match ast:
@@ -316,8 +316,8 @@ def introduceVariables(ast, definiendum):
 
 
 #PREPROCESSOR STUFF
-#Uses the Preprocessor to add spaces to a normal sTeX sentence, so it can be parsed by the Grammatical Framework.
 def pp_preprocessString(input_string):
+    """Uses the Preprocessor to add spaces to a normal sTeX sentence, so it can be parsed by the Grammatical Framework."""
     executable_path = PATH_exe_preprocessor
     command = [executable_path, '--mode=gf', f'--input={input_string}']
     try:
@@ -327,8 +327,8 @@ def pp_preprocessString(input_string):
         print(f"Error: {e.stderr}")
         return None
 
-#Uses the Preprocessor to fetch the used variables and commands, which could be used in the SMGloM files, which the URIs refer to.
 def pp_getInformation(symname_uri, statement_id_uri):
+    """Uses the Preprocessor to fetch the used variables and commands, which could be used in the SMGloM files, which the URIs refer to."""
     executable_path = PATH_exe_preprocessor
     command = [executable_path, '--mode=def-exp', f'--mathhub={PATH_dict_mathhub}', f'--symname={symname_uri}', f'--statement={statement_id_uri}']
     try:
@@ -338,8 +338,8 @@ def pp_getInformation(symname_uri, statement_id_uri):
         print(f"Error: {e.stderr}")
         return None
 
-#Brings a normal sentence into a format, which is parsable by the generated grammar, which is used in the Grammatical Framework.
 def make_sentence_GfConform(sentence):
+    """Brings a normal sentence into a format, which is parsable by the generated grammar, which is used in the Grammatical Framework."""
     sentence_pp = pp_preprocessString(sentence)
     sentence_pp = lowercase_first_letter(sentence_pp).replace("\\", "\\\\")
     sentence_pp = sentence_pp.strip()
@@ -349,8 +349,8 @@ def make_sentence_GfConform(sentence):
     sentence_pp = lowercase_first_letter(sentence_pp)
     return sentence_pp
 
-#Brings a sentence, which is in a format, which is parsable by the Grammatical Framework, back to a normal format.
 def postprocessSentence(sentence):
+    """Brings a sentence, which is in a format, which is parsable by the Grammatical Framework, back to a normal format."""
     sentence = (uppercase_first_letter(sentence).replace("\\\\", "\\")) + "."
     sentence = sentence.replace("{ ", "{")
     sentence = sentence.replace(" {", "{")
@@ -358,9 +358,12 @@ def postprocessSentence(sentence):
     sentence = format_math_expressions(sentence)
     return sentence
 
-#Brings a sentence, which is in a format, which is parsable by the Grammatical Framework, back to a normal format.
-#   Special case, which is necessary for finding the sentences, which need to be replaced while generating the sTeX file.
 def postprocessSentence_onlyremoveSpaces(sentence):
+    """
+    Brings a sentence, which is in a format, which is parsable by the Grammatical Framework, back to a normal format.
+    Special case of postprocessSentence(sentence). 
+    Necessary for finding the sentences, which need to be replaced while generating the sTeX file.
+    """
     sentence = sentence.replace("{ ", "{")
     sentence = sentence.replace(" {", "{")
     sentence = sentence.replace(" }", "}")
@@ -372,8 +375,8 @@ def postprocessSentence_onlyremoveSpaces(sentence):
 
 
 #AST STUFF
-#Generates the AST, which will replace the delete AST in the statement AST.
 def get_replacementTree(deletedTree, definiensContentTree, definiendumAst):
+    """Generates the AST, which will replace the delete AST in the statement AST."""
     deletedAst = GfAst.from_str(deletedTree)
     definiensContentAst = GfAst.from_str(definiensContentTree)
     replacementAst = None
@@ -403,8 +406,8 @@ def get_replacementTree(deletedTree, definiensContentTree, definiendumAst):
     replacementTree = GfAst.to_str(replacementAst)
     return replacementTree
 
-#Extracts the AST of the definiendum and the part of speech category of the definiendum.
 def get_definiendumAST_definiendumType(ast, definiendum):
+    """Extracts the AST of the definiendum and the part of speech category of the definiendum."""
     definiendum = makeNameGfConform(definiendum)
     match ast:
         case GfAst(name, [inner]) if name in {'N_sn_N', 'N_sns_N', 'N_Sn_N', 'N_Sns_N'}:
@@ -421,8 +424,8 @@ def get_definiendumAST_definiendumType(ast, definiendum):
             if res is not None: return res
     return None                                                            
 
-#Extracts the AST in the definiens command of the definiendum out of the definition AST.
 def get_definiensContentTree(ast_definition, definiendum, definiendum_type):
+    """Extracts the AST in the definiens command of the definiendum out of the definition AST."""
     # E.g.: "$ \\\\nvar $ is \\\\definame { positive } iff \\\\definiens [ positive ] { $ \\\\intmorethan { \\\\nvar } { 0 } $ } ."
     definiendum = makeNameGfConform(definiendum)
     definiensContent = None
@@ -439,9 +442,11 @@ def get_definiensContentTree(ast_definition, definiendum, definiendum_type):
             if res is not None: return res
     return None
 
-#Returns the tree, which will be removed out of the statement AST (usually is or contains the definiendum) and the  part of 
-#speech category of the definiendum and the AST of the definiendum.
 def get_deleteTree_definiendumType_definiendumAST(ast_statement, definiendum_gfCon):
+    """
+    Returns the tree, which will be removed out of the statement AST (usually is or contains the definiendum)
+    and the part of speech category of the definiendum and the AST of the definiendum.
+    """
     definienumType = None
     match ast_statement:
         #TODO: adjective (allein stehend, gefolgt von noun, ...); noun; verb; command; ...
@@ -488,8 +493,8 @@ def get_deleteTree_definiendumType_definiendumAST(ast_statement, definiendum_gfC
 
 
 #sTeX STUFF
-#Extracts the importmodule, usemodel and symdecl lines out of a sTeX file.
 def extract_latex_commands(latex_str):
+    """Extracts the importmodule, usemodel and symdecl lines out of a sTeX file."""
     output = []
 
     #Remove \vardef commands if they are defined in the definition/assertion
@@ -516,9 +521,11 @@ def extract_latex_commands(latex_str):
 
     return output
 
-#Generates a sTeX file, which is the statement sTeX file, in which the original sentences are replaced by the merged sentences 
-#and additonal lines are added for newly introduced variables and the relevant lines from the definition sTeX file are added.
 def generate_stexFile(input_stex_definition, input_stex_statement, replacedSentences, newVariables):
+    """
+    Generates a sTeX file, which is the statement sTeX file, in which the original sentences are replaced by the merged sentences 
+    and additonal lines are added for newly introduced variables and the relevant lines from the definition sTeX file are added.
+    """
     output_stex = input_stex_statement
     newLines = ""
 
@@ -552,8 +559,8 @@ def generate_stexFile(input_stex_definition, input_stex_statement, replacedSente
 
     return output_stex
 
-#Fetches the content of the SMGloM file, in which the URI appears.
 def get_stexfile(uri):
+    """Fetches the content of the SMGloM file, in which the URI appears."""
     file_path = uri.replace("/mod", "/source/mod")
     file_path = file_path.replace("http://mathhub.info/smglom", "bachelor_arbeit/Resources/smglomRessources/smglom")
     file_path = file_path.replace("/", "\\")
@@ -568,9 +575,11 @@ def get_stexfile(uri):
 
 
 ###----- Functions ------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
-#Replaces the definiendum in the statement by the definiens content in the definition while keeping a correct sytax and adapting 
-#the variables. Returns an AST.
 def expandDefinitions(definition, statement, definiendum, variablesDefinition, variablesStatement, shell):
+    """
+    Replaces the definiendum in the statement by the definiens content in the definition while 
+    keeping a correct sytax and adapting the variables. Returns an AST.
+    """
     #FROM STATEMENT: Get statement sentence trees
     cmd_parseStatement = 'parse "' + statement + '"'
     tree_statement_all = shell.handle_command(cmd_parseStatement)
@@ -637,8 +646,8 @@ def expandDefinitions(definition, statement, definiendum, variablesDefinition, v
             
             return tree_result
 
-#Linearizes an AST to a sentence through the grammar, which got loaded in the Grammatical Framework shell.
 def linearizeTree(shell: gf.GFShellRaw, tree: GfAst) -> str:
+    """Linearizes an AST to a sentence through the grammar, which got loaded in the Grammatical Framework shell."""
     cmd_linearize = 'linearize ' + str(tree)
     linearizedTree = shell.handle_command(cmd_linearize)
     res_sentence = uppercase_first_letter(linearizedTree)
