@@ -1,3 +1,37 @@
+"""
+Input: statement URI [str], definition URI [str] and definiendum name [str]
+Output: merged sentence [str], (optionally: merged sTeX file)
+
+
+
+The definitionExpander [sTeX/definitionExpander.py] gets three Strings as inputs: A statement URI, a definition URI and the name of the definiendum (= a mathematical term).
+The definiendum is definiend in the paragraph P_2, which the definition URI refers to and gets used in the paragraph P_1, which the statement URI refers to.
+P_1 and P_2 are appear in SMGloM modules M_1 and M_2. THe SMGloM uses sTeX to create a glossary of mathematical terms, which can refer and import each other.
+The Preprocessor is used to extract and format P_1 and P_2 and to collect commands and variables, which could be used in M_1 and M_2.
+
+The grammarGenerator [sTeX/grammarGenerator.py] uses the extraced commands and variables and a list of definiendums [Resources\definiendums.json] to create 
+a grammar G [sTeX\Grammar\GEN_grammar_abstr.gf and sTeX\Grammar\GEN_grammar_concr.gf] for parsing the sentences in P_1 and P_2. 
+    => Currently, this only works, if there is just a single sentence S_1 in P_1 and a single sentence S_2 in P_2.
+The grammar G imports multiple grammars [sTeX\Grammar] to include more mathematical terms.
+
+The grammar G is used to parse the sentences S_1 and S_2 through the Grammatical Framework [Resources/gf.py]. 
+The parsed sentences are then converted into ASTs [Resources/gf_ast.py] A_1 and A_2. 
+Since there are multiple A_1s and A_2s, the algorithm goes to the combinations, until it finds a working combination.
+
+The definitionExpander replaces the definiendum in S_1 through its definition, which is extraced out of S_2.
+This is done by working with A_1 and A_2: 
+    At first, new variables in A_1 are introduced, if those are needed for the merging.
+    Secondly, the subtree A_delete, which needs to be removed from A_1 gets extraceted.
+    Afterwards, the definiens subtree for the definiendum A_definiens gets extraced out of A_2. If necessary, the variables in A_2 are renamed.
+    Then, a replacement tree A_replace gets created based on the part of speech (POS) tag of the deleted tree and the POS tag of the A_definiens.
+    In A_replace the variables from A_2 are replaced by the corresponding variables out of A_1.
+    At last, in A_1 the subtree A_delete is replaced through A_replace.
+
+The resulting AST A_3 is linearized again into the sentence S_3, which is the output.
+Optionally [set active_stexOutput = True], a new SMGloM module M_3 can be generated.
+M_3 is M_1, but S_1 is replaced with S_3 and the necessary sTeX commands from M_2 are added.
+"""
+
 ###----- Imports --------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 import json
 import random
