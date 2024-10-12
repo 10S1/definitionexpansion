@@ -48,7 +48,7 @@ def makeNameGfConform(name: str) -> str:
     return name
 
 def get_usedDefiniendums() -> list[str]:
-    with open('definitionexpansion\Resources\definiendums.json', 'r', encoding='utf-8') as file:
+    with open('Resources\definiendums.json', 'r', encoding='utf-8') as file:
         data = json.load(file)
 
     # Extract words out of the "en"-lists
@@ -63,9 +63,9 @@ def get_usedDefiniendums() -> list[str]:
     return words_unique
 
 def generateGrammar(variables, special_variables, commands_structure, commands_math, commands_text, commands_symbolname):
-    with open("definitionexpansion\sTeX\Grammar\BaseGrammar_abstr.gf", 'r', encoding='utf-8') as file:
+    with open("sTeX\Grammar\BaseGrammar_abstr.gf", 'r', encoding='utf-8') as file:
         abstrSyntaxBase = file.read()
-    with open("definitionexpansion\sTeX\Grammar\BaseGrammar_concr.gf", 'r', encoding='utf-8') as file:
+    with open("sTeX\Grammar\BaseGrammar_concr.gf", 'r', encoding='utf-8') as file:
         concrSyntaxBase = file.read()
 
     #DEFINIENDUMS
@@ -77,13 +77,13 @@ def generateGrammar(variables, special_variables, commands_structure, commands_m
         new_con_defis = ""
         ruleName = "S_definiendum_WW" + makeNameGfConform(defi) + "_S"
         defi2 = defi.replace("-", " - ")
-        if (str(ruleName) + " :") in abs_cmnd:
+        if (str(ruleName) + " :") in abstrSyntaxBase:
             ruleName = str(ruleName) + "2"
 
         new_abs_defis = new_abs_defis + "\n" + "        " + "S_definiendum_WW" + ruleName + " : S -> S;"   
         new_con_defis = new_con_defis + "\n" + "        " + "S_definiendum_WW" + ruleName + " sen = { s = \"\\\\definiens [\" ++ \"" + defi2 + "\" ++ \"] {\" ++ sen.s ++ \"}\" };"
         
-        if (new_abs_defis not in abs_cmnd) and (new_con_defis not in con_defis):
+        if (new_abs_defis not in abs_defis) and (new_con_defis not in con_defis):
             abs_defis = abs_defis + new_abs_defis
             con_defis = con_defis + new_con_defis
 
@@ -238,7 +238,7 @@ def generateGrammar(variables, special_variables, commands_structure, commands_m
     abstractSyntax = splittedAbstr[0] + "\n        -- SPLIT1" + abs_cmnd + splittedAbstr[1] + "\n        -- SPLIT1" + abs_var + splittedAbstr[2] + "\n        -- SPLIT1" + abs_defis + "" + splittedAbstr[3]
     concreteSyntax = splittedConcr[0] + "\n        -- SPLIT1" + con_cmnd + splittedConcr[1] + "\n        -- SPLIT1" + con_var + splittedConcr[2] + "\n        -- SPLIT1" + con_defis + "" + splittedConcr[3]
     concreteSyntax = escapeCmds(concreteSyntax)
-    with open("definitionexpansion\sTeX\Grammar\GEN_grammar_abstr.gf", 'w') as gf_file:
+    with open("sTeX\Grammar\GEN_grammar_abstr.gf", 'w') as gf_file:
         gf_file.write(abstractSyntax)
-    with open("definitionexpansion\sTeX\Grammar\GEN_grammar_concr.gf", 'w') as gf_file:
+    with open("sTeX\Grammar\GEN_grammar_concr.gf", 'w') as gf_file:
         gf_file.write(concreteSyntax)

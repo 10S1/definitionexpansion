@@ -7,6 +7,7 @@ import shutil
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../Resources')))
+from typing import List, Any, Tuple, Dict
 
 import subprocess
 import grammarGenerator
@@ -32,7 +33,7 @@ active_stexOutput = False
 ###----- Input ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 #Choose an example from FDE_examples.json or set input_definiendum, symname_uri and statement_id_uri directly.
 with open('sTeX\FDE_examples.json', 'r') as file:
-        FDE_example = json.load(file)
+    FDE_example = json.load(file)
 VARIABLE_choosenExample = "2-5"
 
 input_definiendum = FDE_example[VARIABLE_choosenExample]["input_definiendum"]
@@ -43,15 +44,15 @@ statement_id_uri = FDE_example[VARIABLE_choosenExample]["statement_id_uri"]
 
 
 ###----- Paths ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
-PATH_exe_preprocessor = os.getenv('PP_EXE')
+PATH_exe_preprocessor = os.getenv('PP_EXE').strip('"')
 if PATH_exe_preprocessor is None:
     print("ERROR: Path to relocate.exe not found. \nCheck whether the Preprocessor is installed and the environment variable is set.")
 
-PATH_exe_gf = os.getenv('GF_EXE')
+PATH_exe_gf = os.getenv('GF_EXE').strip('"')
 if PATH_exe_gf is None:
     print("ERROR: Path to gf.exe not found. \nCheck whether the Grammatical Framework is installed and the environment variable is set.")
 
-PATH_dict_mathhub = os.getenv('MATHHUB')
+PATH_dict_mathhub = os.getenv('MATHHUB').strip('"')
 if (PATH_dict_mathhub is None) or (not os.path.isdir(PATH_dict_mathhub)):
     print("ERROR: Path to MathHub not found. \nCheck whether the SMGloM is installed and the environment variable is set.")
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
@@ -60,21 +61,21 @@ if (PATH_dict_mathhub is None) or (not os.path.isdir(PATH_dict_mathhub)):
 
 ###----- Variables ------------------------------------------------------------------------------------------------------------------------------------------------------------------#-----###
 #Paths where the base grammar (= the grammar which gets extended by additonally generated rules) is placed.
-PATH_gf_grammar = r'definitionexpansion\sTeX/Grammar/'
-basename = r"definitionexpansion\sTeX\Grammar\BaseGrammar"
+PATH_gf_grammar = r'sTeX/Grammar/'
+basename = r"sTeX\Grammar\BaseGrammar"
 
 #Variables which are introduced during merging or renamed.
 introducedVariables = []
 
 #Paths where the generated grammars will be placed.
-PATH_gf_concrGrammar = 'definitionexpansion\sTeX\Grammar\GEN_grammar_concr.gf'
-PATH_gf_abstrGrammar = 'definitionexpansion\sTeX\Grammar\GEN_grammar_abstr.gf'
+PATH_gf_concrGrammar = 'sTeX\Grammar\GEN_grammar_concr.gf'
+PATH_gf_abstrGrammar = 'sTeX\Grammar\GEN_grammar_abstr.gf'
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 
 
 ###----- Irrelevant Functions -------------------------------------------------------------------------------------------------------------------------------------------------------------###
-def flatten_list_of_lists(nested_lists):
+def flatten_list_of_lists(nested_lists: List[List[Any]]) -> List[Any]:
     return [item for sublist in nested_lists for item in sublist]
 def lowercase_first_letter(s: str) -> str:
     if s and s[0].isupper():
@@ -84,7 +85,7 @@ def uppercase_first_letter(s: str) -> str:
     if s and s[0].islower():
         return s[0].upper() + s[1:]
     return s
-def read_file_with_fallback(file_path):
+def read_file_with_fallback(file_path: str) -> str:
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             return f.read()
@@ -92,7 +93,7 @@ def read_file_with_fallback(file_path):
         with open(file_path, 'r', encoding='ISO-8859-1') as f:
             return f.read()
 
-def makeNameGfConform(name):
+def makeNameGfConform(name: str) -> str:
     """Replaces symbols, which are not allowed to appear in the names of the GF rules."""
     name = re.sub(r"\!", "Exlamation", name)
     name = re.sub(r"\?", "Questionmark", name)
@@ -109,11 +110,11 @@ def makeNameGfConform(name):
     name = re.sub(r"[^A-Za-z0-9]", "OtherSymbol", name) 
     return name
 
-def format_math_expressions(text):
+def format_math_expressions(text: str) -> str:
     """Adds spaces for postprocessing the result sentence."""
     return re.sub(r'\$(.*?)\$', lambda m: "$" + m.group(1).replace(" ", "") + "$", text)
 
-def adjust_dollar_sign_spacing(sentence):
+def adjust_dollar_sign_spacing(sentence: str) -> str:
     """Adds spaces around dollar signs for postprocessing the result sentence."""
     parts = sentence.split('$')
     new_sentence = ''
@@ -140,15 +141,15 @@ def adjust_dollar_sign_spacing(sentence):
 
     return new_sentence
 
-def random_variable_name(number):
+def random_variable_name(lengthOfNumber: int) -> str:
     """Generates a string in the format of: "X_" + <digit><digit>...<digit>"""
-    return 'X_' + ''.join(random.choice(string.digits) for _ in range(number))
+    return 'X_' + ''.join(random.choice(string.digits) for _ in range(lengthOfNumber))
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 
 
 ###----- Helper Functions -----------------------------------------------------------------------------------------------------------------------------------------------------------------###
-def alphaRenamingOfVariables(variables_definition, variables_statement, tree_definition):
+def alphaRenamingOfVariables(variables_definition: List[Dict[str, Any]], variables_statement: List[Dict[str, Any]], tree_definition: str) -> List[Any]:
     """Renames variables in the definition sentence/AST if they also appear in the statement sentence/AST."""
     newIntroducedVariables = []
     for var in variables_definition:
@@ -159,7 +160,7 @@ def alphaRenamingOfVariables(variables_definition, variables_statement, tree_def
             newIntroducedVariables.append(newVar)
     return [tree_definition, newIntroducedVariables]
 
-def get_varsOfPrepositions(ast):
+def get_varsOfPrepositions(ast: GfAst) -> List[List[str]]:
     """Extracts variables out of an AST if they occur after a preposition."""
     vars = []
     match ast:
@@ -178,7 +179,7 @@ def get_varsOfPrepositions(ast):
 
     return vars
 
-def get_assignedVariables_definition(ast, definiendum):
+def get_assignedVariables_definition(ast: GfAst, definiendum: str) -> List[List[str]]:
     """Extracts variables and their category (e.g. "main", "from", "to", ...) out of the definitions AST."""
     vars = []
     vars.extend(get_varsOfPrepositions(ast))
@@ -203,7 +204,7 @@ def get_assignedVariables_definition(ast, definiendum):
 
     return vars
 
-def get_assignedVariables_statement(ast, definiendum):
+def get_assignedVariables_statement(ast: GfAst, definiendum: str) -> List[List[str]]:
     """Extracts variables and their category (e.g. "main", "from", "to", ...) out of the statement AST."""
     vars = []
     vars.extend(get_varsOfPrepositions(ast))
@@ -251,7 +252,7 @@ def get_assignedVariables_statement(ast, definiendum):
 
     return vars
 
-def assignedVariableRenaming(tree_replacement, tree_definition_without_definiens, tree_statement, definiendum):
+def assignedVariableRenaming(tree_replacement: str, tree_definition_without_definiens: str, tree_statement: str, definiendum: str) -> List[Any]:
     """The variables in the statement and the definition, which can be assigned to each other, get accordingly replaced in the definition AST."""
     replaceVar_dict = {}   #E.g. like: ["main", "xVar"], ["from", "yVar"]
 
@@ -259,8 +260,6 @@ def assignedVariableRenaming(tree_replacement, tree_definition_without_definiens
     ast_statement = GfAst.from_str(tree_statement)
     vars_definition = get_assignedVariables_definition(ast_definition, definiendum)
     vars_statement = get_assignedVariables_statement(ast_statement, definiendum)
-    print("\nvars_definition: " + str(vars_definition))
-    print("\nvars_statement: " + str(vars_statement))
     vars_unassigned = vars_definition
 
     for varDef in vars_definition:
@@ -280,7 +279,7 @@ def assignedVariableRenaming(tree_replacement, tree_definition_without_definiens
     print("\nreplaceVar_dict: " + str(replaceVar_dict))
     return [tree_replacement, vars_unassigned]
 
-def introduceVariables(ast, definiendum):
+def introduceVariables(ast: GfAst, definiendum: str) -> List[Any]:
     """If there is a noun in the statement sentence, which is [connected to] the definiendum, a variable gets introduced after it."""
     introducedVars = []
     tree_statement = ast
@@ -316,7 +315,7 @@ def introduceVariables(ast, definiendum):
 
 
 #PREPROCESSOR STUFF
-def pp_preprocessString(input_string):
+def pp_preprocessString(input_string: str) -> str:
     """Uses the Preprocessor to add spaces to a normal sTeX sentence, so it can be parsed by the Grammatical Framework."""
     executable_path = PATH_exe_preprocessor
     command = [executable_path, '--mode=gf', f'--input={input_string}']
@@ -327,18 +326,18 @@ def pp_preprocessString(input_string):
         print(f"Error: {e.stderr}")
         return None
 
-def pp_getInformation(symname_uri, statement_id_uri):
+def pp_getInformation(symname_uri: str, statement_id_uri: str) -> str:
     """Uses the Preprocessor to fetch the used variables and commands, which could be used in the SMGloM files, which the URIs refer to."""
     executable_path = PATH_exe_preprocessor
     command = [executable_path, '--mode=def-exp', f'--mathhub={PATH_dict_mathhub}', f'--symname={symname_uri}', f'--statement={statement_id_uri}']
     try:
-        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        result = subprocess.run(command, capture_output=True, text=True, check=True, shell=True, encoding='utf-8', errors='replace')
         return result.stdout.strip()
     except subprocess.CalledProcessError as e:
         print(f"Error: {e.stderr}")
         return None
 
-def make_sentence_GfConform(sentence):
+def make_sentence_GfConform(sentence: str) -> str:
     """Brings a normal sentence into a format, which is parsable by the generated grammar, which is used in the Grammatical Framework."""
     sentence_pp = pp_preprocessString(sentence)
     sentence_pp = lowercase_first_letter(sentence_pp).replace("\\", "\\\\")
@@ -349,7 +348,7 @@ def make_sentence_GfConform(sentence):
     sentence_pp = lowercase_first_letter(sentence_pp)
     return sentence_pp
 
-def postprocessSentence(sentence):
+def postprocessSentence(sentence: str) -> str:
     """Brings a sentence, which is in a format, which is parsable by the Grammatical Framework, back to a normal format."""
     sentence = (uppercase_first_letter(sentence).replace("\\\\", "\\")) + "."
     sentence = sentence.replace("{ ", "{")
@@ -358,7 +357,7 @@ def postprocessSentence(sentence):
     sentence = format_math_expressions(sentence)
     return sentence
 
-def postprocessSentence_onlyremoveSpaces(sentence):
+def postprocessSentence_onlyremoveSpaces(sentence: str) -> str:
     """
     Brings a sentence, which is in a format, which is parsable by the Grammatical Framework, back to a normal format.
     Special case of postprocessSentence(sentence). 
@@ -375,7 +374,7 @@ def postprocessSentence_onlyremoveSpaces(sentence):
 
 
 #AST STUFF
-def get_replacementTree(deletedTree, definiensContentTree, definiendumAst):
+def get_replacementTree(deletedTree: str, definiensContentTree: str, definiendumAst: GfAst) -> str:
     """Generates the AST, which will replace the delete AST in the statement AST."""
     deletedAst = GfAst.from_str(deletedTree)
     definiensContentAst = GfAst.from_str(definiensContentTree)
@@ -406,7 +405,7 @@ def get_replacementTree(deletedTree, definiensContentTree, definiendumAst):
     replacementTree = GfAst.to_str(replacementAst)
     return replacementTree
 
-def get_definiendumAST_definiendumType(ast, definiendum):
+def get_definiendumAST_definiendumType(ast: GfAst, definiendum: str) -> Tuple[GfAst, str]:
     """Extracts the AST of the definiendum and the part of speech category of the definiendum."""
     definiendum = makeNameGfConform(definiendum)
     match ast:
@@ -424,7 +423,7 @@ def get_definiendumAST_definiendumType(ast, definiendum):
             if res is not None: return res
     return None                                                            
 
-def get_definiensContentTree(ast_definition, definiendum, definiendum_type):
+def get_definiensContentTree(ast_definition: GfAst, definiendum: str, definiendum_type: str) -> str:
     """Extracts the AST in the definiens command of the definiendum out of the definition AST."""
     # E.g.: "$ \\\\nvar $ is \\\\definame { positive } iff \\\\definiens [ positive ] { $ \\\\intmorethan { \\\\nvar } { 0 } $ } ."
     definiendum = makeNameGfConform(definiendum)
@@ -442,7 +441,7 @@ def get_definiensContentTree(ast_definition, definiendum, definiendum_type):
             if res is not None: return res
     return None
 
-def get_deleteTree_definiendumType_definiendumAST(ast_statement, definiendum_gfCon):
+def get_deleteTree_definiendumType_definiendumAST(ast_statement: GfAst, definiendum_gfCon: GfAst) -> List[Any]:
     """
     Returns the tree, which will be removed out of the statement AST (usually is or contains the definiendum)
     and the part of speech category of the definiendum and the AST of the definiendum.
@@ -464,13 +463,13 @@ def get_deleteTree_definiendumType_definiendumAST(ast_statement, definiendum_gfC
                 if defi_1 == definiendumAST:
                     return [GfAst("UseCl", [temp_1, pol_1, GfAst("PredVP", [np_1, GfAst("UseComp", [GfAst("PositA", [defi_1])])])]).to_str(), definienumType, definiendumAST.to_str()]
 
-        case GfAst("AdjCN", [GfAst("PositA", [defi_2]), rest]):
-            print("TEST3")
-            definiendumAST_definiendumType2 = get_definiendumAST_definiendumType(defi_2, definiendum_gfCon)
-            if definiendumAST_definiendumType2 != None:
-                [definiendumAST, definienumType] = definiendumAST_definiendumType2
-                if defi_2 == definiendumAST:
-                    return [GfAst("AdjCN", [GfAst("PositA", [defi_2]), rest]).to_str(), definienumType, definiendumAST.to_str()]
+        # case GfAst("AdjCN", [GfAst("PositA", [defi_2]), rest]):
+        #     print("TEST3")
+        #     definiendumAST_definiendumType2 = get_definiendumAST_definiendumType(defi_2, definiendum_gfCon)
+        #     if definiendumAST_definiendumType2 != None:
+        #         [definiendumAST, definienumType] = definiendumAST_definiendumType2
+        #         if defi_2 == definiendumAST:
+        #             return [GfAst("AdjCN", [GfAst("PositA", [defi_2]), rest]).to_str(), definienumType, definiendumAST.to_str()]
 
         case GfAst('BlaBla', [bla1]):
             [definiendumTree, definienumType] = get_definiendumAST_definiendumType(bla1, definiendum_gfCon)
@@ -493,7 +492,7 @@ def get_deleteTree_definiendumType_definiendumAST(ast_statement, definiendum_gfC
 
 
 #sTeX STUFF
-def extract_latex_commands(latex_str):
+def extract_latex_commands(latex_str: str) -> List[str]:
     """Extracts the importmodule, usemodel and symdecl lines out of a sTeX file."""
     output = []
 
@@ -521,7 +520,7 @@ def extract_latex_commands(latex_str):
 
     return output
 
-def generate_stexFile(input_stex_definition, input_stex_statement, replacedSentences, newVariables):
+def generate_stexFile(input_stex_definition: str, input_stex_statement: str, replacedSentences: Dict[str, str], newVariables: List[str]) -> str:
     """
     Generates a sTeX file, which is the statement sTeX file, in which the original sentences are replaced by the merged sentences 
     and additonal lines are added for newly introduced variables and the relevant lines from the definition sTeX file are added.
@@ -559,7 +558,7 @@ def generate_stexFile(input_stex_definition, input_stex_statement, replacedSente
 
     return output_stex
 
-def get_stexfile(uri):
+def get_stexfile(uri: str) -> str:
     """Fetches the content of the SMGloM file, in which the URI appears."""
     file_path = uri.replace("/mod", "/source/mod")
     file_path = file_path.replace("http://mathhub.info/smglom", "bachelor_arbeit/Resources/smglomRessources/smglom")
@@ -575,7 +574,7 @@ def get_stexfile(uri):
 
 
 ###----- Functions ------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
-def expandDefinitions(definition, statement, definiendum, variablesDefinition, variablesStatement, shell):
+def expandDefinitions(definition: str, statement: str, definiendum: str, variablesDefinition: List[Dict[str, Any]], variablesStatement: List[Dict[str, Any]], shell: gf.GFShellRaw) -> str:
     """
     Replaces the definiendum in the statement by the definiens content in the definition while 
     keeping a correct sytax and adapting the variables. Returns an AST.
@@ -658,7 +657,7 @@ def linearizeTree(shell: gf.GFShellRaw, tree: GfAst) -> str:
 
 ###----- Main -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 #Input: Definition, Statement and Definiendum
-def main(symname_uri, statement_id_uri, definiendum):
+def main(symname_uri: str, statement_id_uri: str, definiendum: str) -> str:
 
     #HANDLE THE INPUT OF THE PREPROCESSOR
     input_str = pp_getInformation(symname_uri, statement_id_uri)
@@ -728,7 +727,7 @@ def main(symname_uri, statement_id_uri, definiendum):
     statement = make_sentence_GfConform(og_statement)
 
     special_variables = []
-    grammarGenerator.generateGrammar(basename, gg_vars, special_variables, all_commands_structure, all_commands_math, all_commands_text, all_commands_symbolname, PATH_gf_grammar)
+    grammarGenerator.generateGrammar(gg_vars, special_variables, all_commands_structure, all_commands_math, all_commands_text, all_commands_symbolname)
 
     #Initialize GF
     shell = gf.GFShellRaw(PATH_exe_gf)
@@ -742,7 +741,7 @@ def main(symname_uri, statement_id_uri, definiendum):
     if (newVars != []):
         gg_vars.extend(newVars)
         shell.do_shutdown()
-        grammarGenerator.generateGrammar(basename, gg_vars, special_variables, all_commands_structure, all_commands_math, all_commands_text, all_commands_symbolname, PATH_gf_grammar)
+        grammarGenerator.generateGrammar(gg_vars, special_variables, all_commands_structure, all_commands_math, all_commands_text, all_commands_symbolname)
         shell = gf.GFShellRaw(PATH_exe_gf)
         shell.handle_command(f"import {PATH_gf_concrGrammar}")
 
