@@ -30,7 +30,9 @@ The sTeX version works on SMGloM modules. Their content needs to be preprocessed
          * For example: Install https://github.com/jfschaefer/stextools and execute `python -m pip install .`. (Maybe additonally necessary: `python -m pip install pylatexenc python-gitlab --user`)
 
 
-2. For definition expansion: In `sTeX\definitionExpander.py` change `symname_uri` to the URI of the definition and `statement_id_uri` to the URI of the statement (= the text, in which you want to replace the definition). The URIs refer to paragraphs in SMGloM modules.
+2. For definition expansion: 
+   * In `sTeX\definitionExpander.py` change `symname_uri` to the URI of the definition and `statement_id_uri` to the URI of the statement (= the text, in which you want to replace the definition). The URIs refer to paragraphs in SMGloM modules.
+   * Copy the folder `sTeX\SMGloM\defexp` into the `smglom` folder in the `MathHub` folder, which you created in step `1.4`.
 
 
 
