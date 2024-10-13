@@ -1,5 +1,6 @@
 *.gfo
-
+GEN_grammar_abstr.gf
+GEN_grammar_concr.gf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
