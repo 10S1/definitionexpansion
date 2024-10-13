@@ -2,11 +2,15 @@
 import regex as re
 import json
 import os
+import sys
 import subprocess
 import threading
-import definitionexpansion.Resources.gf as gf
+from typing import List, Any, Tuple, Dict
 
-import definitionexpansion.sTeX.grammarGenerator as grammarGenerator
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../Resources')))
+import gf
+import grammarGenerator
+
 from langdetect import detect   #pip install langdetect
 import spacy   # pip install spacy
 nlp_en = spacy.load("en_core_web_sm")   # python -m spacy download en_core_web_sm  # For English
@@ -16,18 +20,24 @@ nlp_de = spacy.load("de_core_news_sm")   # python -m spacy download de_core_news
 
 
 ###----- Paths ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
-#Path to the executable of the Grammatical Framework
-PATH_exe_gf = r'bachelor_arbeit\Resources\GrammaticalFramework\gf_3.11\gf.exe'
-#Path to the executable of the Preprocessor
-PATH_exe_preprocessor = r"bachelor_arbeit\Resources\Preprocessor\relocate.exe"
+PATH_exe_preprocessor = os.getenv('PP_EXE').strip('"')
+if PATH_exe_preprocessor is None:
+    print("ERROR: Path to relocate.exe not found. \nCheck whether the Preprocessor is installed and the environment variable is set.")
+
+PATH_exe_gf = os.getenv('GF_EXE').strip('"')
+if PATH_exe_gf is None:
+    print("ERROR: Path to gf.exe not found. \nCheck whether the Grammatical Framework is installed and the environment variable is set.")
+
+PATH_dict_mathhub = os.getenv('MATHHUB').strip('"')
+if (PATH_dict_mathhub is None) or (not os.path.isdir(PATH_dict_mathhub)):
+    print("ERROR: Path to MathHub not found. \nCheck whether the SMGloM is installed and the environment variable is set.")
+
+PATH_folder_smglom = PATH_dict_mathhub + "\smglom"
+
 #Path to the afmcList (Used by the Preprocessor)
-PATH_json_amfcList = r"...\afmcList.json"
-#Path to the folder in which the generated grammar will be placed
-PATH_gf_grammar = r'bachelor_arbeit/Grammar/'
-#Path to the SMGloM
-PATH_folder_smglom = r'...\SMGloM'
-#Path to the MathHub folder
-PATH_dict_mathhub = r"...\sTeXDIR\MathHub"
+PATH_json_amfcList = r"sTeX\afmcList.json"
+with open(PATH_json_amfcList, 'w') as file:
+    file.write("[]")
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 
@@ -49,7 +59,10 @@ if active_detailedOutput:
     details = ""
     temp_add_details = ""
 shell = None
-PATH_gf_concrGrammar = str(PATH_gf_grammar) + str(PAR_grammarname) + "_concr.gf"
+
+#Paths where the generated grammars will be placed.
+PATH_gf_concrGrammar = 'sTeX\Grammar\GEN_grammar_concr.gf'
+PATH_gf_abstrGrammar = 'sTeX\Grammar\GEN_grammar_abstr.gf'
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 
@@ -95,7 +108,7 @@ def create_output(all_parsed_sentences, all_not_parsed_sentences, all_timeout_se
     output = str(output) + "\n\nParsed sentences: " + str(all_parsed_sentences) + "\n\nNot parsed sentences: " + str(all_not_parsed_sentences) + "\n\nTimeout sentences: " + str(all_timeout_sentences)
     if active_detailedOutput:
         output = str(output) + "\n\n--------------------------------------------------------------------------\n\n" + str(details)
-    with open("bachelor_arbeit\Evaluation\\" + name_outputfile + ".txt", 'w') as file:
+    with open("sTeX\\" + name_outputfile + ".txt", 'w') as file:
         file.write(output)
 
 def read_file_with_fallback(file_path):
@@ -229,7 +242,9 @@ def generate_grammar(folders):
         print("New folder started.")
         for file_path in folder["filepaths"]:
             file_uri = file_path.replace("\\", "/")
-            file_uri = file_uri.replace("bachelor_arbeit/Resources/smglomRessources/smglom", "http://mathhub.info/smglom")
+            tmp_parts = file_uri.split("/smglom", 1)
+            file_uri = tmp_parts[1]
+            file_uri = "http://mathhub.info/smglom" + file_uri
             file_uri = file_uri.replace("/source", "")
             file_uri = file_uri.replace(".tex", "")
             text_information_str = PREPROCESSOR_getInformation(file_uri)
@@ -274,7 +289,7 @@ def generate_grammar(folders):
     special_variables.extend([{'name': 'Alpha', 'parameters': [], 'notation': 'Α'}, {'name': 'Beta', 'parameters': [], 'notation': 'Β'}, {'name': 'Gamma', 'parameters': [], 'notation': 'Γ'}, {'name': 'Delta', 'parameters': [], 'notation': 'Δ'}, {'name': 'Epsilon', 'parameters': [], 'notation': 'Ε'}, {'name': 'Zeta', 'parameters': [], 'notation': 'Ζ'}, {'name': 'Eta', 'parameters': [], 'notation': 'Η'}, {'name': 'Theta', 'parameters': [], 'notation': 'Θ'}, {'name': 'Iota', 'parameters': [], 'notation': 'Ι'}, {'name': 'Kappa', 'parameters': [], 'notation': 'Κ'}, {'name': 'Lambda', 'parameters': [], 'notation': 'Λ'}, {'name': 'Mu', 'parameters': [], 'notation': 'Μ'}, {'name': 'Nu', 'parameters': [], 'notation': 'Ν'}, {'name': 'Xi', 'parameters': [], 'notation': 'Ξ'}, {'name': 'Omicron', 'parameters': [], 'notation': 'Ο'}, {'name': 'Pi', 'parameters': [], 'notation': 'Π'}, {'name': 'Rho', 'parameters': [], 'notation': 'Ρ'}, {'name': 'Sigma', 'parameters': [], 'notation': 'Σ'}, {'name': 'Tau', 'parameters': [], 'notation': 'Τ'}, {'name': 'Upsilon', 'parameters': [], 'notation': 'Υ'}, {'name': 'Phi', 'parameters': [], 'notation': 'Φ'}, {'name': 'Chi', 'parameters': [], 'notation': 'Χ'}, {'name': 'Psi', 'parameters': [], 'notation': 'Ψ'}, {'name': 'Omega', 'parameters': [], 'notation': 'Ω'}])
     special_variables.extend([{'name': 'alpha', 'parameters': [], 'notation': 'α'}, {'name': 'beta', 'parameters': [], 'notation': 'β'}, {'name': 'gamma', 'parameters': [], 'notation': 'γ'}, {'name': 'delta', 'parameters': [], 'notation': 'δ'}, {'name': 'epsilon', 'parameters': [], 'notation': 'ε'}, {'name': 'zeta', 'parameters': [], 'notation': 'ζ'}, {'name': 'eta', 'parameters': [], 'notation': 'η'}, {'name': 'theta', 'parameters': [], 'notation': 'θ'}, {'name': 'iota', 'parameters': [], 'notation': 'ι'}, {'name': 'kappa', 'parameters': [], 'notation': 'κ'}, {'name': 'lambda', 'parameters': [], 'notation': 'λ'}, {'name': 'mu', 'parameters': [], 'notation': 'μ'}, {'name': 'nu', 'parameters': [], 'notation': 'ν'}, {'name': 'xi', 'parameters': [], 'notation': 'ξ'}, {'name': 'omicron', 'parameters': [], 'notation': 'ο'}, {'name': 'pi', 'parameters': [], 'notation': 'π'}, {'name': 'rho', 'parameters': [], 'notation': 'ρ'}, {'name': 'sigma', 'parameters': [], 'notation': 'σ'}, {'name': 'tau', 'parameters': [], 'notation': 'τ'}, {'name': 'upsilon', 'parameters': [], 'notation': 'υ'}, {'name': 'phi', 'parameters': [], 'notation': 'φ'}, {'name': 'chi', 'parameters': [], 'notation': 'χ'}, {'name': 'psi', 'parameters': [], 'notation': 'ψ'}, {'name': 'omega', 'parameters': [], 'notation': 'ω'}])
 
-    grammarGenerator.generateGrammar(all_variables, special_variables, all_commands_structure, all_commands_math, all_commands_text, all_commands_symbolname, PATH_gf_grammar)
+    grammarGenerator.generateGrammar(all_variables, special_variables, all_commands_structure, all_commands_math, all_commands_text, all_commands_symbolname)
     print("\nGENERATED.")
 
 def try_parsing(sentence):
@@ -313,7 +328,7 @@ def sentence_is_parsable(sentence):
         shell = gf.GFShellRaw(PATH_exe_gf)
         shell.handle_command(f"import {PATH_gf_concrGrammar}")
         return "TIMEOUT"
-
+    #print("\n" + str(result))
     sentence_tree = result[0]
 
     if ("parser failed" in sentence_tree) or (sentence_tree == ""): 
