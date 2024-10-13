@@ -40,12 +40,12 @@ import regex as re
 import shutil
 import os
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../Resources')))
+import subprocess
 from typing import List, Any, Tuple, Dict
 
-import subprocess
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../Resources')))
 import grammarGenerator
-import gf as gf
+import gf
 from gf_ast import GfAst
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
@@ -286,12 +286,12 @@ def get_assignedVariables_statement(ast: GfAst, definiendum: str) -> List[List[s
 
     return vars
 
-def assignedVariableRenaming(tree_replacement: str, tree_definition_without_definiens: str, tree_statement: str, definiendum: str) -> List[Any]:
-    """The variables in the statement and the definition, which can be assigned to each other, get accordingly replaced in the definition AST."""
+def assignedVariableRenaming(tree_replacement: str, ast_definition: GfAst, ast_statement: GfAst, definiendum: str) -> List[Any]:
+    """
+    The variables in the statement and the definition (execluding the definiens content), which can be assigned to each other, 
+    get accordingly replaced in the definition AST.
+    """
     replaceVar_dict = {}   #E.g. like: ["main", "xVar"], ["from", "yVar"]
-
-    ast_definition = GfAst.from_str(tree_definition_without_definiens)
-    ast_statement = GfAst.from_str(tree_statement)
     vars_definition = get_assignedVariables_definition(ast_definition, definiendum)
     vars_statement = get_assignedVariables_statement(ast_statement, definiendum)
     vars_unassigned = vars_definition
@@ -665,8 +665,8 @@ def expandDefinitions(definition: str, statement: str, definiendum: str, variabl
                 continue
 
             #IN REPLACEMENT: Assign the corresponding variables from the statement
-            tree_definition_without_definiens = tree_definition.replace(tree_definiensContent, "R_DEFINIENS_CONTENT")
-            varRenaming = assignedVariableRenaming(tree_replacement, tree_definition_without_definiens, tree_statement, definiendum)
+            ast_definition_without_definiens = GfAst.from_str(tree_definition.replace(tree_definiensContent, "R_DEFINIENS_CONTENT"))
+            varRenaming = assignedVariableRenaming(tree_replacement, ast_definition_without_definiens, ast_statement, definiendum)
             tree_replacement = varRenaming[0] #Definition Baum mit ersetzen Variablen
             #TODO: TODOTODO Abbrechen, falls Variablen nicht passen?
 
