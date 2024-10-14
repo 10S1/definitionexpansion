@@ -78,11 +78,11 @@ statement_id_uri = FDE_example[VARIABLE_choosenExample]["statement_id_uri"]
 
 
 ###----- Paths ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
-PATH_exe_preprocessor = os.getenv('PP_EXE').strip('"')
+PATH_exe_preprocessor = shutil.which('relocate') #os.getenv('PP_EXE').strip('"')
 if PATH_exe_preprocessor is None:
     print("ERROR: Path to relocate.exe not found. \nCheck whether the Preprocessor is installed and the environment variable is set.")
 
-PATH_exe_gf = os.getenv('GF_EXE').strip('"')
+PATH_exe_gf = shutil.which('gf')
 if PATH_exe_gf is None:
     print("ERROR: Path to gf.exe not found. \nCheck whether the Grammatical Framework is installed and the environment variable is set.")
 
@@ -703,7 +703,9 @@ def linearizeTree(shell: gf.GFShellRaw, tree: GfAst) -> str:
 
 ###----- Main -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 #Input: Definition, Statement and Definiendum
-def main(symname_uri: str, statement_id_uri: str, definiendum: str) -> str:
+def main(symname_uri: str, statement_id_uri: str, definiendum: str, stexOutput: bool) -> str:
+    global active_stexOutput 
+    active_stexOutput = stexOutput
 
     #HANDLE THE INPUT OF THE PREPROCESSOR
     input_str = pp_getInformation(symname_uri, statement_id_uri)
@@ -811,7 +813,10 @@ def main(symname_uri: str, statement_id_uri: str, definiendum: str) -> str:
 
     return result_sentence_postprocessed
   
-output = main(symname_uri, statement_id_uri, input_definiendum)
-print("\nOutput: " + str(output))
-print("\nDONE.")
+print(symname_uri)
+print(statement_id_uri)
+print(input_definiendum)
+#output = main(symname_uri, statement_id_uri, input_definiendum, True)
+#print("\nOutput: " + str(output))
+#print("\nDONE.")
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###

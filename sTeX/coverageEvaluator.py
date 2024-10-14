@@ -6,6 +6,7 @@ import sys
 import subprocess
 import threading
 from typing import List, Any, Tuple, Dict
+import shutil
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../Resources')))
 import gf
@@ -20,11 +21,11 @@ nlp_de = spacy.load("de_core_news_sm")   # python -m spacy download de_core_news
 
 
 ###----- Paths ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
-PATH_exe_preprocessor = os.getenv('PP_EXE').strip('"')
+PATH_exe_preprocessor = shutil.which('relocate')
 if PATH_exe_preprocessor is None:
     print("ERROR: Path to relocate.exe not found. \nCheck whether the Preprocessor is installed and the environment variable is set.")
 
-PATH_exe_gf = os.getenv('GF_EXE').strip('"')
+PATH_exe_gf = shutil.which('gf')
 if PATH_exe_gf is None:
     print("ERROR: Path to gf.exe not found. \nCheck whether the Grammatical Framework is installed and the environment variable is set.")
 
