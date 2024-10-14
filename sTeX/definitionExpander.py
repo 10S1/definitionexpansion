@@ -59,7 +59,7 @@ length_randomVariablenames = 20
 #If true: Additionally, a sTeX file gets generated.
 #   The generateds file is the file, in which the sentence, which Statement URI refers to, occurs. However, in the file
 #   the sentence itself is replaced by the new merged sentence and necessary commands from the Definition URI file are added.
-active_stexOutput = False
+active_stexOutput = True
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 
@@ -594,13 +594,25 @@ def generate_stexFile(input_stex_definition: str, input_stex_statement: str, rep
 
 def get_stexfile(uri: str) -> str:
     """Fetches the content of the SMGloM file, in which the URI appears."""
-    file_path = uri.replace("/mod", "/source/mod")
-    file_path = file_path.replace("http://mathhub.info/smglom", "bachelor_arbeit/Resources/smglomRessources/smglom")
-    file_path = file_path.replace("/", "\\")
-    file_path = file_path.split("?")[0] 
-    file_path = file_path + ".en.tex"
+    if "defexp/def?" in uri:
+        temp_file_path = uri.split("?")[1] 
+        file_path = PATH_dict_mathhub + "\smglom\defexp\source\def\\" + temp_file_path + ".en.tex"
+    elif "defexp/stm" in uri:
+        temp_file_path = uri.split("?")[1] 
+        temp_file_path = temp_file_path.replace("-", "_")
+        temp_file_path = temp_file_path.replace(".", "-")
+        file_path = PATH_dict_mathhub + "\smglom\defexp\source\stm\\" + temp_file_path + ".en.tex"
+    else:
+        temp_file_path = uri.split("?")[0] 
+        file_path = file_path.replace("/", "\\")
+        file_path = uri.replace("/mod", "/source/mod")
+        file_path = file_path.replace("http://mathhub.info/smglom", PATH_dict_mathhub + "/smglom")
+        file_path = file_path + ".en.tex"
+
     file_path = file_path.replace(".en.en", ".en")
-    file_path = file_path.replace("\defexp", "\defexp\source\def")
+    file_path = file_path.replace("-en.en", ".en")
+    file_path = file_path.replace("/", "\\")
+
     file_content = read_file_with_fallback(file_path)
     return file_content
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
@@ -793,8 +805,8 @@ def main(symname_uri: str, statement_id_uri: str, definiendum: str) -> str:
         input_stex_definition = get_stexfile(symname_uri)
         input_stexStatement = get_stexfile(statement_id_uri)
         result_stex_output = generate_stexFile(input_stex_definition, input_stexStatement, replacedSentences, newVariables)
-        name_outputStex = "generatedOutput.en.tex"
-        with open("bachelor_arbeit\DefinitionExpansion_stexOutput\\" + name_outputStex, 'w') as gf_file:
+        name_outputStex = "GEN_mergedOutput.en.tex"
+        with open("sTeX\\" + name_outputStex, 'w') as gf_file:
             gf_file.write(result_stex_output)
 
     return result_sentence_postprocessed

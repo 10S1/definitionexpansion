@@ -2,6 +2,8 @@
 GEN_grammar_abstr.gf
 GEN_grammar_concr.gf
 
+GEN_mergedOutput.en.tex
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
