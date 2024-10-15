@@ -37,6 +37,7 @@ The sTeX version works on SMGloM modules. Their content needs to be preprocessed
    * Example: 
       * `import definitionExpander`
       * `definitionExpander.main("http://mathhub.info/smglom/defexp/def?consistent?consistent", "http://mathhub.info/smglom/defexp/stm/stm_2-5.en?stm-2.5", "consistent", True)`
+      * Further example tuples can be found in `sTeX\FDE_examples.json`.
 
 * Parsing Coverage Evaluation: To evaluate the coverage of a grammar while parsing the sentences, which appear in SMGloM modules, use the function `def main(pathToConcrGrammar: str, pathToAbstrGrammar: str) -> int`.
    * Inputs:

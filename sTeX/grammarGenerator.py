@@ -1,5 +1,6 @@
 import regex as re
 import json
+import preprocessingInterface
 
 def escapeCmds(text: str) -> str:
     text = text.replace("\\omega", "\\\\omega")
@@ -31,22 +32,6 @@ def escapeCmds(text: str) -> str:
     #text = text.replace("\\", "\\\\")
     return text
 
-def makeNameGfConform(name: str) -> str:
-    name = re.sub(r"\!", "Exlamation", name)
-    name = re.sub(r"\?", "Questionmark", name)
-    name = re.sub(r"\.", "Point", name)
-    name = re.sub(r"\-", "Dash", name)
-    name = re.sub(r"\{", "LeftCurlyBracket", name)
-    name = re.sub(r"\}", "RightCurlyBracket", name)
-    name = re.sub(r"\[", "LeftSquareBracket", name)
-    name = re.sub(r"\]", "RightSquareBracket", name)
-    name = re.sub(r"\(", "LeftParenthesis", name)
-    name = re.sub(r"\)", "RightParenthesis", name)
-    name = re.sub(r"\ ", "Space", name)  # Technically, you don't need to escape space
-    name = re.sub(r"\\", "Slash", name)
-    name = re.sub(r"[^A-Za-z0-9]", "OtherSymbol", name) 
-    return name
-
 def get_usedDefiniendums() -> list[str]:
     with open('Resources\definiendums.json', 'r', encoding='utf-8') as file:
         data = json.load(file)
@@ -75,7 +60,7 @@ def generateGrammar(variables, special_variables, commands_structure, commands_m
     for defi in usedDefiniendums:
         new_abs_defis = ""
         new_con_defis = ""
-        ruleName = "S_definiendum_WW" + makeNameGfConform(defi) + "_S"
+        ruleName = "S_definiendum_WW" + preprocessingInterface.makeNameGfConform(defi) + "_S"
         defi2 = defi.replace("-", " - ")
         if (str(ruleName) + " :") in abstrSyntaxBase:
             ruleName = str(ruleName) + "2"
@@ -95,7 +80,7 @@ def generateGrammar(variables, special_variables, commands_structure, commands_m
         new_abs_var = "" 
         new_con_var = ""
         temp_Var = (variable["name"]).replace("\\", "")
-        var = makeNameGfConform(temp_Var)
+        var = preprocessingInterface.makeNameGfConform(temp_Var)
         varName = variable["name"].replace("\n", "")
         if variable["parameters"] == []:
             #Abstract rules  
@@ -146,7 +131,7 @@ def generateGrammar(variables, special_variables, commands_structure, commands_m
         new_abs_var = "" 
         new_con_var = ""
         temp_Var = (variable["name"]).replace("\\", "")
-        var = makeNameGfConform(temp_Var)
+        var = preprocessingInterface.makeNameGfConform(temp_Var)
         varName = variable["name"].replace("\n", "")
         if variable["parameters"] == []:
             new_abs_var = new_abs_var + "\n" + "        " + "G_undeclearedVariable_VAR" + var + " : C_variable;"      
@@ -166,16 +151,17 @@ def generateGrammar(variables, special_variables, commands_structure, commands_m
         new_abs_cmnd = "" 
         new_con_cmnd = ""
         cmnd = command["command"]
-        if (makeNameGfConform(cmnd) == "leftOtherSymbolSpaceSpacedistributivityPointcond") or (makeNameGfConform(cmnd) == "rightOtherSymbolSpaceSpacedistributivityPointcond") or (makeNameGfConform(cmnd) == "noSpaceconfusionSpacebetweenOtherSymbolSpaceSpaceSpaceSpaceconstructors"):
+        if (preprocessingInterface.makeNameGfConform(cmnd) == "leftOtherSymbolSpaceSpacedistributivityPointcond") or (preprocessingInterface.makeNameGfConform(cmnd) == "rightOtherSymbolSpaceSpacedistributivityPointcond") or (preprocessingInterface.makeNameGfConform(cmnd) == "noSpaceconfusionSpacebetweenOtherSymbolSpaceSpaceSpaceSpaceconstructors"):
             continue
+        temp_name = "G_texCommand_TEX" + preprocessingInterface.makeNameGfConform(cmnd)
         #Abstract rules    
-        new_abs_cmnd = new_abs_cmnd + "\n" + "        " + "G_texCommand_TEX" + makeNameGfConform(cmnd) + "_brackets : " + "C_texCommand;"
-        new_abs_cmnd = new_abs_cmnd + "\n" + "        " + "G_texCommand_TEX" + makeNameGfConform(cmnd) + "_brackets_stringList : " + "C_strList -> C_texCommand;"
-        new_abs_cmnd = new_abs_cmnd + "\n" + "        " + "G_texCommand_TEX" + makeNameGfConform(cmnd) + "_exclamation : " + "C_texCommand;"
+        new_abs_cmnd = new_abs_cmnd + "\n" + "        " + temp_name + "_brackets : " + "C_texCommand;"
+        new_abs_cmnd = new_abs_cmnd + "\n" + "        " + temp_name + "_brackets_stringList : " + "C_strList -> C_texCommand;"
+        new_abs_cmnd = new_abs_cmnd + "\n" + "        " + temp_name + "_exclamation : " + "C_texCommand;"
         #Concrete rules
-        new_con_cmnd = new_con_cmnd + "\n" + "        " + "G_texCommand_TEX" + makeNameGfConform(cmnd) + "_brackets = \"\\" + cmnd + "\" ++ \"{ } { }\";"
-        new_con_cmnd = new_con_cmnd + "\n" + "        " + "G_texCommand_TEX" + makeNameGfConform(cmnd) + "_brackets_stringList fields = \"\\" + cmnd + "\" ++ \"{ } { } [\" ++ fields ++ \"]\";"
-        new_con_cmnd = new_con_cmnd + "\n" + "        " + "G_texCommand_TEX" + makeNameGfConform(cmnd) + "_exclamation = \"\\" + cmnd + "\" ++ \"!\";"
+        new_con_cmnd = new_con_cmnd + "\n" + "        " + temp_name + "_brackets = \"\\" + cmnd + "\" ++ \"{ } { }\";"
+        new_con_cmnd = new_con_cmnd + "\n" + "        " + temp_name + "_brackets_stringList fields = \"\\" + cmnd + "\" ++ \"{ } { } [\" ++ fields ++ \"]\";"
+        new_con_cmnd = new_con_cmnd + "\n" + "        " + temp_name + "_exclamation = \"\\" + cmnd + "\" ++ \"!\";"
         if (new_abs_cmnd not in abs_cmnd) and (new_con_cmnd not in con_cmnd):
             abs_cmnd = abs_cmnd + new_abs_cmnd
             con_cmnd = con_cmnd + new_con_cmnd
@@ -186,7 +172,7 @@ def generateGrammar(variables, special_variables, commands_structure, commands_m
         new_con_cmnd = ""
         cmnd = command["command"]
         #Abstract rules         
-        new_abs_cmnd = new_abs_cmnd + "\n" + "        " + "G_texCommand_TEX" + makeNameGfConform(cmnd) + "_" + ''.join(command["parameters"]) + " : "
+        new_abs_cmnd = new_abs_cmnd + "\n" + "        " + "G_texCommand_TEX" + preprocessingInterface.makeNameGfConform(cmnd) + "_" + ''.join(command["parameters"]) + " : "
         for par in command["parameters"]:
             if par == "i" or par == "b": 
                 new_abs_cmnd = new_abs_cmnd + "C_texArgument -> "
@@ -207,7 +193,7 @@ def generateGrammar(variables, special_variables, commands_structure, commands_m
                 arguments = arguments + " a" + str(counter_a)
                 text = text + " ++ a" + str(counter_a)
                 counter_a += 1
-        new_con_cmnd = new_con_cmnd + "\n" + "        " + "G_texCommand_TEX" + makeNameGfConform(cmnd) + "_" + ''.join(command["parameters"]) + arguments + " = \"\\" + cmnd + "\"" + text + ";"
+        new_con_cmnd = new_con_cmnd + "\n" + "        " + "G_texCommand_TEX" + preprocessingInterface.makeNameGfConform(cmnd) + "_" + ''.join(command["parameters"]) + arguments + " = \"\\" + cmnd + "\"" + text + ";"
         if (new_abs_cmnd not in abs_cmnd) and (new_con_cmnd not in con_cmnd):
             abs_cmnd = abs_cmnd + new_abs_cmnd
             con_cmnd = con_cmnd + new_con_cmnd
@@ -219,9 +205,9 @@ def generateGrammar(variables, special_variables, commands_structure, commands_m
         if "parameters" in command["command"]:
             cmnd = command["command"]
             #Abstract rules       
-            new_abs_cmnd = new_abs_cmnd + "\n" + "        " + "G_texCommand_TEX_PN" + makeNameGfConform(cmnd) + "_" + ''.join(command["parameters"]) + " : " + "PN;"
+            new_abs_cmnd = new_abs_cmnd + "\n" + "        " + "G_texCommand_TEX_PN" + preprocessingInterface.makeNameGfConform(cmnd) + "_" + ''.join(command["parameters"]) + " : " + "PN;"
             #Concrete rules
-            new_con_cmnd = new_con_cmnd + "\n" + "        " + "G_texCommand_TEX_PN" + makeNameGfConform(cmnd) + "_" + ''.join(command["parameters"]) + " = \"\\" + cmnd + "\";"
+            new_con_cmnd = new_con_cmnd + "\n" + "        " + "G_texCommand_TEX_PN" + preprocessingInterface.makeNameGfConform(cmnd) + "_" + ''.join(command["parameters"]) + " = \"\\" + cmnd + "\";"
             if (new_abs_cmnd not in abs_cmnd) and (new_con_cmnd not in con_cmnd):
                 abs_cmnd = abs_cmnd + new_abs_cmnd
                 con_cmnd = con_cmnd + new_con_cmnd
