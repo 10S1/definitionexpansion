@@ -69,23 +69,23 @@ PATH_gf_abstrGrammar = 'sTeX\Grammar\GEN_grammar_abstr.gf'
 
 
 ###----- Irrelevant Functions -------------------------------------------------------------------------------------------------------------------------------------------------------------###
-def debug_print(text, value):
+def debug_print(text: str, value: Any):
     print("\n" + str(text) + ": " + str(value))
 
-def lowercase_first_letter(s):
+def lowercase_first_letter(s: str) -> str:
     if s and s[0].isupper():
         return s[0].lower() + s[1:]
     return s
 
-def flatten_list_of_lists(nested_lists):
+def flatten_list_of_lists(nested_lists: List[List[Any]]) -> List[Any]:
     return [item for sublist in nested_lists for item in sublist]
 
-def preprocessSentence(sentence): 
+def preprocessSentence(sentence: str) -> str: 
     sentence = sentence.strip()
     sentence = (lowercase_first_letter(sentence).replace("\\", "\\\\"))[:-2]
     return sentence
 
-def remove_text_in_parentheses(text):
+def remove_text_in_parentheses(text: str) -> str:
     result = []
     skip = 0
     for char in text:
@@ -112,7 +112,7 @@ def create_output(all_parsed_sentences, all_not_parsed_sentences, all_timeout_se
     with open("sTeX\\" + name_outputfile + ".txt", 'w') as file:
         file.write(output)
 
-def read_file_with_fallback(file_path):
+def read_file_with_fallback(file_path: str):
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             return f.read()
@@ -120,7 +120,7 @@ def read_file_with_fallback(file_path):
         with open(file_path, 'r', encoding='ISO-8859-1') as f:
             return f.read()
 
-def get_mod_files_paths(base_dir):
+def get_mod_files_paths(base_dir: str) -> List[Dict]:
     all_files_paths = []
     
     # Go through all folders in the smglom directory
@@ -153,7 +153,7 @@ def get_mod_files_paths(base_dir):
 
 
 ###----- Functions ------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
-def PREPROCESSOR_preprocessString(input_string):
+def PREPROCESSOR_preprocessString(input_string: str) -> str:
     executable_path = PATH_exe_preprocessor
     command = [executable_path, '--mode=gf', f'--input={input_string}']
     try:
@@ -163,7 +163,7 @@ def PREPROCESSOR_preprocessString(input_string):
         print(f"Error: {e.stderr}")
         return None
 
-def PREPROCESSOR_getInformation(file_uri):
+def PREPROCESSOR_getInformation(file_uri: str) -> str:
     executable_path = PATH_exe_preprocessor
     command = [executable_path, '--mode=def-exp-eval', f'--mathhub={PATH_dict_mathhub}', f'--file={file_uri}', f'--amfc={PATH_json_amfcList}']
     try:
@@ -176,7 +176,7 @@ def PREPROCESSOR_getInformation(file_uri):
         print(f"Error: {e.stderr}")
         return None
 
-def splitTextIntoSentences(text):
+def splitTextIntoSentences(text: str) -> List[str]:
     #SpaCy
     language = detect(text)
     if language == "de":
@@ -214,7 +214,7 @@ def splitTextIntoSentences(text):
     #     sentences = tokenizer.tokenize(text)
     #     return sentences
 
-def make_sentence_GfConform(sentence):
+def make_sentence_GfConform(sentence: str) -> str:
     sentence_pp = sentence.strip()
     sentence_pp = remove_text_in_parentheses(sentence_pp)
     sentence_pp = re.sub(r'(?<!\\)[\n\r]', '', sentence_pp)
@@ -233,7 +233,7 @@ def make_sentence_GfConform(sentence):
         sentence_pp = sentence_pp.strip()
     return sentence_pp
 
-def generate_grammar(folders):
+def generate_grammar(folders: List[Any]):
     all_variables = []
     all_commands_structure = []
     all_commands_math = []
@@ -293,7 +293,7 @@ def generate_grammar(folders):
     grammarGenerator.generateGrammar(all_variables, special_variables, all_commands_structure, all_commands_math, all_commands_text, all_commands_symbolname)
     print("\nGENERATED.")
 
-def try_parsing(sentence):
+def try_parsing(sentence: str) -> str:
     cmd = 'parse "' + sentence + '"'
     tree = shell.handle_command(cmd)
     #Multiple statement trees 
@@ -304,7 +304,7 @@ def try_parsing(sentence):
         temp_add_details = "\n\ncmd: " + str(cmd) + "\nTree: " + str(tree)
     return tree
 
-def sentence_is_parsable(sentence):
+def sentence_is_parsable(sentence: str) -> str:
     global shell
     # Preprocess sentence
     sentence_pp = make_sentence_GfConform(sentence)
