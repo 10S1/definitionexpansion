@@ -19,7 +19,7 @@ def generate_grammar(folders: List[Any]):
             file_uri = "http://mathhub.info/smglom" + file_uri
             file_uri = file_uri.replace("/source", "")
             file_uri = file_uri.replace(".tex", "")
-            text_information_str = preprocessingInterface.getInformation(file_uri)
+            text_information_str = preprocessingInterface.getInformation_defExpEval(file_uri)
             if text_information_str == None:
                 print("Not preprocessed: " + file_uri)
             else:
