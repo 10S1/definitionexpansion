@@ -1,6 +1,6 @@
 from io import StringIO
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Optional
 import re
 import functools
 from copy import deepcopy
@@ -15,26 +15,43 @@ def stanza_tokenizer():
 
 
 class Node:
-    def to_gf(self, _tags: Optional[list[tuple[str, str]]] = None) -> str:
+    def to_gf(self) -> tuple[list[tuple[str, str]], str]:
+        _tags = []
+        return _tags, self._to_gf(_tags)
+        
+    def _to_gf(self, _tags: list[tuple[str, str]]) -> str:
         raise NotImplementedError()
 
-class X(Node):
-    __match_args__ = ('tag', 'children', 'attrs')
 
-    def __init__(self, tag: str, children: list[Node], attrs: dict[str, str] = {}):
+class X(Node):
+    __match_args__ = ('tag', 'children', 'attrs', 'wrapfun')
+
+    def __init__(self, tag: str, children: list[Node], attrs: dict[str, str] = {},
+                 wrapfun: Optional[str] = None):
         self.tag = tag
         self.children = children
         self.attrs = attrs
+        self.wrapfun = wrapfun
+
+    def pure_node_strings(self) -> tuple[str, str]:
+        a, b = f'<{self.tag} ' + ' '.join(f'{k}="{v}"' for k, v in self.attrs.items()) + '>', f'</{self.tag}>'
+        for child in self.children:
+            da, db = child.pure_node_strings()
+            a += da
+            b = db + b
+        return a, b
 
     def __repr__(self):
-        return f'X({self.tag!r}, {self.children!r}, {self.attrs!r})'
+        return f'X({self.tag!r}, {self.children!r}, {self.attrs!r}, {self.wrapfun!r})'
 
-    def to_gf(self, _tags: Optional[list[tuple[str, str]]] = None) -> str:
-        if not _tags:
-            _tags = []
+    def _to_gf(self, _tags: list[tuple[str, str]]) -> str:
         tag_num = len(_tags)
-        _tags.append((f'<self.tag ' + ' '.join(f'{k}="{v}"' for k, v in self.attrs.items()) + '>', f'</{self.tag}>'))
-        return f'(tag {tag_num} {" ".join(child.to_gf(_tags) for child in self.children)})'
+        if self.wrapfun is None:
+            _tags.append(self.pure_node_strings())
+            return f'(tag {tag_num})'
+        else:
+            _tags.append((f'<{self.tag} ' + ' '.join(f'{k}="{v}"' for k, v in self.attrs.items()) + '>', f'</{self.tag}>'))
+            return f'({self.wrapfun} (tag {tag_num}) {" ".join(child._to_gf(_tags) for child in self.children)})'
 
 class XT(Node):
     __match_args__ = ('text')
@@ -45,6 +62,12 @@ class XT(Node):
     def __repr__(self):
         return f'XT({self.text!r})'
 
+    def _to_gf(self, _tags: list[tuple[str, str]]) -> str:
+        raise RuntimeError('XT nodes should only be in pure X nodes and never passed to GF')
+
+    def pure_x_node(self) -> bool:
+        return True
+
 class G(Node):
     __match_args__ = ('node', 'children')
 
@@ -54,6 +77,9 @@ class G(Node):
 
     def __repr__(self):
         return f'G({self.node!r}, {self.children!r})'
+
+    def _to_gf(self, _tags: list[tuple[str, str]]) -> str:
+        return f'({self.node} {" ".join(child._to_gf(_tags) for child in self.children)})'
 
 
 SHTML_NS = 'http://example.org/shtml'
@@ -221,6 +247,7 @@ def build_tree(nodes: list[X], ast_str: str) -> Node:
         tag = read_label()
         if tag.startswith('wrap'):
             node = deepcopy(nodes[read_tag()])
+            node.wrapfun = tag
             node.children = [read_node()]
             return node
         else:
@@ -249,6 +276,11 @@ def build_tree(nodes: list[X], ast_str: str) -> Node:
     return node
 
 
+def final_recovery(string: str, recovery_info: list[tuple[str, str]]) -> str:
+    for i, (open_tag, close_tag) in enumerate(recovery_info):
+        string = string.replace(f'< {i} >', open_tag)
+        string = string.replace(f'</ {i} >', close_tag)
+    return string
 
 
 def main():
@@ -267,12 +299,14 @@ def test():
     # import ..Resources.gf as gf
 
     shtml = parse_shtml(Path('test.xhtml'))
+    print(Path('test.xhtml').read_text())
     xs, string = get_gfxml_string(shtml)
     sentences = sentence_tokenize(string)
     shell = gf.GFShellRaw('gf')
     output = shell.handle_command('i TestEng.gf')
     for s in sentences:
         gf_ast = shell.handle_command(f'p "{s}"')
+        print(gf_ast)
         tree = build_tree(xs, gf_ast)
         print(tree)
         # rename john to mary
@@ -280,7 +314,12 @@ def test():
             case G(_, [X(_, [G('john') as g], _), _]):
                 g.node = 'mary'
         print(tree)
-        gf_lin = shell.handle_command(f'linearize {tree.to_gf()}')
+        recovery_info, gf_input = tree.to_gf()
+        print(gf_input)
+        gf_lin = shell.handle_command(f'linearize {gf_input}')
+        print(gf_lin)
+        result = final_recovery(gf_lin, recovery_info)
+        print(result)
 
 
 # main()
