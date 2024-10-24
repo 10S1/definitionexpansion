@@ -25,6 +25,13 @@ The sTeX version works on SMGloM modules. Their content needs to be preprocessed
 
    4. For definition expansion: 
       * Copy the folder `sTeX\SMGloM\defexp` into the `smglom` folder in the `MathHub` folder, which you created in step `3.`.
+   
+   5. For coverage evaluation: If not installed yet:
+      * `python -m pip install spacy`
+      * `python -m spacy download en_core_web_sm`
+      * `python -m spacy download de_core_news_sm`
+      * `python -m pip install langdetect`
+
 
 ### B. Usage
 * Definition Expansion: To apply definition expansion, use the function `def main(symname_uri: str, statement_id_uri: str, definiendum: str, stexOutput: bool) -> str`.
