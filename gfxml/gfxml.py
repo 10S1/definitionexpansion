@@ -294,16 +294,15 @@ def main():
 def test():
     import sys
     # TODO: proper package structure
-    sys.path.append('../Resources')
+    import os
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../Resources')))
     import gf
-    # import ..Resources.gf as gf
 
-    shtml = parse_shtml(Path('test.xhtml'))
-    print(Path('test.xhtml').read_text())
+    shtml = parse_shtml(Path(__file__).parent / 'test.xhtml')
     xs, string = get_gfxml_string(shtml)
     sentences = sentence_tokenize(string)
     shell = gf.GFShellRaw('gf')
-    output = shell.handle_command('i TestEng.gf')
+    output = shell.handle_command('i ' + str(Path(__file__).parent / 'TestEng.gf'))
     for s in sentences:
         gf_ast = shell.handle_command(f'p "{s}"')
         print(gf_ast)
