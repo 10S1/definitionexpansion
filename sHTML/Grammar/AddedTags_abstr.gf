@@ -1,4 +1,4 @@
-abstract AddedTags_abstr = {
+abstract AddedTags_abstr = Grammar, MathTerms, MorphoDictEngAbs ** {
 
     cat
         Tag;
@@ -9,98 +9,98 @@ abstract AddedTags_abstr = {
         
     
 
-        wrap_A : Tag -> A -> A;
-        wrap_A2 : Tag -> A2 -> A2;
-        wrap_ACard : Tag -> ACard -> ACard;
+        WRAP_A : Tag -> A -> A;
+        WRAP_A2 : Tag -> A2 -> A2;
+        WRAP_ACard : Tag -> ACard -> ACard;
 
-        wrap_AP : Tag -> AP -> AP;
-        wrap_AdA : Tag -> AdA -> AdA;
-        wrap_AdN : Tag -> AdN -> AdN;
-        wrap_AdV : Tag -> AdV -> AdV;
-        wrap_Adv : Tag -> Adv -> Adv;
+        WRAP_AP : Tag -> AP -> AP;
+        WRAP_AdA : Tag -> AdA -> AdA;
+        WRAP_AdN : Tag -> AdN -> AdN;
+        WRAP_AdV : Tag -> AdV -> AdV;
+        WRAP_Adv : Tag -> Adv -> Adv;
 
-        wrap_Ant : Tag -> Ant -> Ant;
-        wrap_CAdv : Tag -> CAdv -> CAdv;
-        wrap_CN : Tag -> CN -> CN;
-        wrap_Card : Tag -> Card -> Card;
-        wrap_Cl : Tag -> Cl -> Cl;
+        WRAP_Ant : Tag -> Ant -> Ant;
+        WRAP_CAdv : Tag -> CAdv -> CAdv;
+        WRAP_CN : Tag -> CN -> CN;
+        WRAP_Card : Tag -> Card -> Card;
+        WRAP_Cl : Tag -> Cl -> Cl;
                 
-        wrap_ClSlash : Tag -> ClSlash -> ClSlash;
-        wrap_Comp : Tag -> Comp -> Comp;
-        wrap_Conj : Tag -> Conj -> Conj;
-        wrap_DAP : Tag -> DAP -> DAP;
-        wrap_Det : Tag -> Det -> Det;
+        WRAP_ClSlash : Tag -> ClSlash -> ClSlash;
+        WRAP_Comp : Tag -> Comp -> Comp;
+        WRAP_Conj : Tag -> Conj -> Conj;
+        WRAP_DAP : Tag -> DAP -> DAP;
+        WRAP_Det : Tag -> Det -> Det;
                         
-        wrap_Dig : Tag -> Dig -> Dig;
-        wrap_Digits : Tag -> Digits -> Digits;
-        wrap_IAdv : Tag -> IAdv -> IAdv;
-        wrap_IComp : Tag -> IComp -> IComp;
-        wrap_IDet : Tag -> IDet -> IDet;
+        WRAP_Dig : Tag -> Dig -> Dig;
+        WRAP_Digits : Tag -> Digits -> Digits;
+        WRAP_IAdv : Tag -> IAdv -> IAdv;
+        WRAP_IComp : Tag -> IComp -> IComp;
+        WRAP_IDet : Tag -> IDet -> IDet;
                         
-        wrap_IP : Tag -> IP -> IP;
-        wrap_IQuant : Tag -> IQuant -> IQuant;
-        wrap_Imp : Tag -> Imp -> Imp;
-        wrap_ImpForm : Tag -> ImpForm -> ImpForm;
-        wrap_Interj : Tag -> Interj -> Interj;
+        WRAP_IP : Tag -> IP -> IP;
+        WRAP_IQuant : Tag -> IQuant -> IQuant;
+        WRAP_Imp : Tag -> Imp -> Imp;
+        -- WRAP_ImpForm : Tag -> ImpForm -> ImpForm;
+        WRAP_Interj : Tag -> Interj -> Interj;
 
-        wrap_ListAP : Tag -> ListAP -> ListAP;
-        wrap_ListAdv : Tag -> ListAdv -> ListAdv;
-        wrap_ListNP : Tag -> ListNP -> ListNP;
-        wrap_ListRS : Tag -> ListRS -> ListRS;
-        wrap_ListS : Tag -> ListS -> ListS;
+        WRAP_ListAP : Tag -> ListAP -> ListAP;
+        WRAP_ListAdv : Tag -> ListAdv -> ListAdv;
+        WRAP_ListNP : Tag -> ListNP -> ListNP;
+        WRAP_ListRS : Tag -> ListRS -> ListRS;
+        WRAP_ListS : Tag -> ListS -> ListS;
 
-        wrap_N : Tag -> N -> N;
-        wrap_N2 : Tag -> N2 -> N2;
-        wrap_N3 : Tag -> N3 -> N3;
-        wrap_NP : Tag -> NP -> NP;
-        wrap_Num : Tag -> Num -> Num;
+        WRAP_N : Tag -> N -> N;
+        WRAP_N2 : Tag -> N2 -> N2;
+        WRAP_N3 : Tag -> N3 -> N3;
+        WRAP_NP : Tag -> NP -> NP;
+        WRAP_Num : Tag -> Num -> Num;
 
-        wrap_Numeral : Tag -> Numeral -> Numeral;
-        wrap_Ord : Tag -> Ord -> Ord;
-        wrap_PConj : Tag -> PConj -> PConj;
-        wrap_PN : Tag -> PN -> PN;
-        wrap_Phr : Tag -> Phr -> Phr;
+        WRAP_Numeral : Tag -> Numeral -> Numeral;
+        WRAP_Ord : Tag -> Ord -> Ord;
+        WRAP_PConj : Tag -> PConj -> PConj;
+        WRAP_PN : Tag -> PN -> PN;
+        WRAP_Phr : Tag -> Phr -> Phr;
 
-        wrap_Pol : Tag -> Pol -> Pol;
-        wrap_Predet : Tag -> Predet -> Predet;
-        wrap_Prep : Tag -> Prep -> Prep;
-        wrap_Pron : Tag -> Pron -> Pron;
-        wrap_Punct : Tag -> Punct -> Punct;
+        WRAP_Pol : Tag -> Pol -> Pol;
+        WRAP_Predet : Tag -> Predet -> Predet;
+        WRAP_Prep : Tag -> Prep -> Prep;
+        WRAP_Pron : Tag -> Pron -> Pron;
+        -- WRAP_Punct : Tag -> Punct -> Punct;
 
-        wrap_QCl : Tag -> QCl -> QCl;
-        wrap_QS : Tag -> QS -> QS;
-        wrap_RCl : Tag -> RCl -> RCl;
-        wrap_RP : Tag -> RP -> RP;
-        wrap_RS : Tag -> RS -> RS;
+        WRAP_QCl : Tag -> QCl -> QCl;
+        WRAP_QS : Tag -> QS -> QS;
+        WRAP_RCl : Tag -> RCl -> RCl;
+        WRAP_RP : Tag -> RP -> RP;
+        WRAP_RS : Tag -> RS -> RS;
 
-        wrap_S : Tag -> S -> S;
-        wrap_SC : Tag -> SC -> SC;
-        wrap_SSlash : Tag -> SSlash -> SSlash;
-        wrap_Sub100 : Tag -> Sub100 -> Sub100;
-        wrap_Sub1000 : Tag -> Sub1000 -> Sub1000;
+        WRAP_S : Tag -> S -> S;
+        WRAP_SC : Tag -> SC -> SC;
+        WRAP_SSlash : Tag -> SSlash -> SSlash;
+        WRAP_Sub100 : Tag -> Sub100 -> Sub100;
+        WRAP_Sub1000 : Tag -> Sub1000 -> Sub1000;
 
-        wrap_Subj : Tag -> Subj -> Subj;
-        wrap_Temp : Tag -> Temp -> Temp;
-        wrap_Tense : Tag -> Tense -> Tense;
-        wrap_Text : Tag -> Text -> Text;
-        wrap_Unit : Tag -> Unit -> Unit;
+        WRAP_Subj : Tag -> Subj -> Subj;
+        WRAP_Temp : Tag -> Temp -> Temp;
+        WRAP_Tense : Tag -> Tense -> Tense;
+        WRAP_Text : Tag -> Text -> Text;
+        -- WRAP_Unit : Tag -> Unit -> Unit;
 
-        wrap_Utt : Tag -> Utt -> Utt;
-        wrap_V : Tag -> V -> V;
-        wrap_V2 : Tag -> V2 -> V2;
-        wrap_V2A : Tag -> V2A -> V2A;
-        wrap_V2Q : Tag -> V2Q -> V2Q;
+        WRAP_Utt : Tag -> Utt -> Utt;
+        WRAP_V : Tag -> V -> V;
+        WRAP_V2 : Tag -> V2 -> V2;
+        WRAP_V2A : Tag -> V2A -> V2A;
+        WRAP_V2Q : Tag -> V2Q -> V2Q;
 
-        wrap_V2S : Tag -> V2S -> V2S;
-        wrap_V2V : Tag -> V2V -> V2V;
-        wrap_V3 : Tag -> V3 -> V3;
-        wrap_VA : Tag -> VA -> VA;
-        wrap_VP : Tag -> VP -> VP;
+        WRAP_V2S : Tag -> V2S -> V2S;
+        WRAP_V2V : Tag -> V2V -> V2V;
+        WRAP_V3 : Tag -> V3 -> V3;
+        WRAP_VA : Tag -> VA -> VA;
+        WRAP_VP : Tag -> VP -> VP;
 
-        wrap_VPSlash : Tag -> VPSlash -> VPSlash;
-        wrap_VQ : Tag -> VQ -> VQ;
-        wrap_VS : Tag -> VS -> VS;
-        wrap_VV : Tag -> VV -> VV;
-        wrap_Voc : Tag -> Voc -> Voc;
+        WRAP_VPSlash : Tag -> VPSlash -> VPSlash;
+        WRAP_VQ : Tag -> VQ -> VQ;
+        WRAP_VS : Tag -> VS -> VS;
+        WRAP_VV : Tag -> VV -> VV;
+        WRAP_Voc : Tag -> Voc -> Voc;
 
 }
