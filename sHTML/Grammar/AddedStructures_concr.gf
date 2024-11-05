@@ -1,6 +1,4 @@
-concrete AddedStructures_concr of AddedStructures_abstr = GrammarEng, ** open ParadigmsEng, SymbolicEng, ResEng, IrregEng in {	
-    
-    lincat
+concrete AddedStructures_concr of AddedStructures_abstr = GrammarEng, MathTermsEng, MorphoDictEng ** open ParadigmsEng, SymbolicEng, ResEng, IrregEng, ExtraEng, ExtendEng in {	
         
 	lin
         

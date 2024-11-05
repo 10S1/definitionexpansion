@@ -1,6 +1,4 @@
-concrete AddedWords_concr of AddedWords_abstr = GrammarEng ** open ParadigmsEng, SymbolicEng, ResEng, IrregEng, in {	
-    
-    lincat
+concrete AddedWords_concr of AddedWords_abstr = GrammarEng, MathTermsEng, MorphoDictEng ** open ParadigmsEng, SymbolicEng, ResEng, IrregEng, ExtraEng, ExtendEng in {	  
         
 	lin
         

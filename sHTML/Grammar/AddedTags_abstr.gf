@@ -1,4 +1,4 @@
-abstract AddedTags_abstr = Grammar, MathTerms, MorphoDictEngAbs ** {
+abstract AddedTags_abstr = Grammar ** {
 
     cat
         Tag;

@@ -1,7 +1,1 @@
-abstract BaseGrammar_abstr = Grammar, MathTerms, MorphoDictEngAbs ** {
-
-	cat
-        
-	data
-
-}
+abstract BaseGrammar_abstr = Grammar, MathTerms, MorphoDictEngAbs, AddedTags_abstr, AddedStructures_abstr, AddedWords_abstr ** {}

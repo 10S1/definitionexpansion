@@ -1,4 +1,4 @@
-concrete AddedTags_concr of AddedTags_abstr = GrammarEng, MathTermsEng, MorphoDictEng ** open ParadigmsEng, SymbolicEng, ResEng, IrregEng, ExtraEng, ExtendEng in {	
+concrete AddedTags_concr of AddedTags_abstr = GrammarEng ** open ParadigmsEng, SymbolicEng, ResEng, IrregEng, ExtraEng, ExtendEng in {	
 
     lincat
         Tag = {s: Str};
@@ -48,7 +48,11 @@ concrete AddedTags_concr of AddedTags_abstr = GrammarEng, MathTermsEng, MorphoDi
         };
 
         WRAP_CN tag x = { 
-            s = table { num => table { case => WRAP tag (x.s ! num ! case) } }; 
+            s = table { 
+                num => table { 
+                    c => WRAP tag (x.s ! num ! c) 
+                } 
+            }; 
             g = x.g 
         };
 
@@ -101,7 +105,7 @@ concrete AddedTags_concr of AddedTags_abstr = GrammarEng, MathTermsEng, MorphoDi
 
 --        WRAP_IAdv tag x = ;
 
-        WRAP_ICOMP tag x = { 
+        WRAP_IComp tag x = { 
             s = WRAP tag x.s 
         };
 

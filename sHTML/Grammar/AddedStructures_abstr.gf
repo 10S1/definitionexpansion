@@ -1,6 +1,4 @@
-abstract AddedStructures_abstr = Grammar ** {
-	
-    cat
+abstract AddedStructures_abstr = Grammar, MathTerms, MorphoDictEngAbs ** {
 
 	data
         

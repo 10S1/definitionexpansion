@@ -1,6 +1,1 @@
-concrete BaseGrammar_concr of BaseGrammar_abstr = GrammarEng, MathTermsEng, MorphoDictEng ** open ParadigmsEng, SymbolicEng, ResEng, IrregEng, ExtraEng, ExtendEng in {	
-        
-        lincat
-	
-        lin
-}
+concrete BaseGrammar_concr of BaseGrammar_abstr = GrammarEng, MathTermsEng, MorphoDictEng, AddedTags_concr, AddedStructures_concr, AddedWords_concr ** open ParadigmsEng, SymbolicEng, ResEng, IrregEng, ExtraEng, ExtendEng in {}
