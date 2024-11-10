@@ -304,6 +304,7 @@ def test():
     shell = gf.GFShellRaw('gf')
     output = shell.handle_command('i ' + str(Path(__file__).parent / 'TestEng.gf'))
     for s in sentences:
+        print(s)
         gf_ast = shell.handle_command(f'p "{s}"')
         print(gf_ast)
         tree = build_tree(xs, gf_ast)
