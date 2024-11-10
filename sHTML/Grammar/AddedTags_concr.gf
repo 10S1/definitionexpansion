@@ -9,18 +9,6 @@ concrete AddedTags_concr of AddedTags_abstr = GrammarEng ** open ParadigmsEng, S
 
 
 
-        -- Additional categories
-
-        WRAP_Adv tag x = {
-            s = WRAP tag x.s
-        };
-
-        WRAP_Utt tag x = {
-            s = WRAP tag x.s
-        };
-
-
-
         -- Categories from https://www.grammaticalframework.org/lib/doc/synopsis/index.html
         
         WRAP_A tag x = { 
@@ -52,7 +40,9 @@ concrete AddedTags_concr of AddedTags_abstr = GrammarEng ** open ParadigmsEng, S
 
 --        WRAP_AdV tag x = ;
 
---        WRAP_Adv tag x = ;
+        WRAP_Adv tag x = {
+            s = WRAP tag x.s
+        };
 
 --        WRAP_Ant tag x = ;
 
@@ -275,7 +265,9 @@ concrete AddedTags_concr of AddedTags_abstr = GrammarEng ** open ParadigmsEng, S
 
 --        -- WRAP_Unit tag x = ;
 
---        WRAP_Utt tag x = ;
+        WRAP_Utt tag x = {
+            s = WRAP tag x.s
+        };
 
         WRAP_V tag x = { 
             s = table { vf => WRAP tag (x.s ! vf) }; 

@@ -6,14 +6,6 @@ abstract AddedTags_abstr = Grammar ** {
 
     fun
         tag : Int -> Tag;
-        
-    
-
-        -- Additional categories
-
-        WRAP_Adv : Tag -> Adv -> Adv;
-
-        WRAP_Utt : Tag -> Utt -> Utt;
 
 
 
