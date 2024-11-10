@@ -8,6 +8,20 @@ concrete AddedTags_concr of AddedTags_abstr = GrammarEng ** open ParadigmsEng, S
         tag i = {s = i.s};
 
 
+
+        -- Additional categories
+
+        WRAP_Adv tag x = {
+            s = WRAP tag x.s
+        };
+
+        WRAP_Utt tag x = {
+            s = WRAP tag x.s
+        };
+
+
+
+        -- Categories from https://www.grammaticalframework.org/lib/doc/synopsis/index.html
         
         WRAP_A tag x = { 
             s = table { af => WRAP tag (x.s ! af) }; 
@@ -320,50 +334,50 @@ concrete AddedTags_concr of AddedTags_abstr = GrammarEng ** open ParadigmsEng, S
             isRefl = x.isRefl 
         };
 
-        WRAP_VP tag x = { 
-            p = WRAP tag x.p;
-            ad = table { agr => WRAP tag (x.ad ! agr) };
-            s2 = table { agr => WRAP tag (x.s2 ! agr) };
-            ext = WRAP tag x.ext;
-            prp = WRAP tag x.prp;
-            ptp = WRAP tag x.ptp;
-            inf = WRAP tag x.inf;
-            isSimple = x.isSimple;
-            isAux = x.isAux;
-            auxForms = {
-                past = table { pol => table { agr => WRAP tag (x.auxForms.past ! pol ! agr) } };
-                contr = table { pol => table { agr => WRAP tag (x.auxForms.contr ! pol ! agr) } };
-                pres = table { pol => table { agr => WRAP tag (x.auxForms.pres ! pol ! agr) } }
-            };
-            nonAuxForms = {
-                pres = table { agr => WRAP tag (x.nonAuxForms.pres ! agr) };
-                past = WRAP tag x.nonAuxForms.past
-            }
-        };
+--        WRAP_VP tag x = lin VP { 
+--            p = WRAP tag x.p;
+--            ad = table { agr => WRAP tag (x.ad ! agr) };
+--            s2 = table { agr => WRAP tag (x.s2 ! agr) };
+--            ext = WRAP tag x.ext;
+--            prp = WRAP tag x.prp;
+--            ptp = WRAP tag x.ptp;
+--            inf = WRAP tag x.inf;
+--            isSimple = x.isSimple;
+--            isAux = x.isAux;
+--            auxForms = {
+--                past = table { pol => table { agr => WRAP tag (x.auxForms.past ! pol ! agr) } };
+--                contr = table { pol => table { agr => WRAP tag (x.auxForms.contr ! pol ! agr) } };
+--                pres = table { pol => table { agr => WRAP tag (x.auxForms.pres ! pol ! agr) } }
+--            };
+--            nonAuxForms = {
+--                pres = table { agr => WRAP tag (x.nonAuxForms.pres ! agr) };
+--                past = WRAP tag x.nonAuxForms.past
+--            }
+--        };
 
-        WRAP_VPSlash tag x = { 
-            p = WRAP tag x.p;
-            ad = table { agr => WRAP tag (x.ad ! agr) };
-            s2 = table { agr => WRAP tag (x.s2 ! agr) };
-            ext = WRAP tag x.ext;
-            prp = WRAP tag x.prp;
-            ptp = WRAP tag x.ptp;
-            inf = WRAP tag x.inf;
-            isSimple = x.isSimple;
-            isAux = x.isAux;
-            auxForms = {
-                past = table { pol => table { agr => WRAP tag (x.auxForms.past ! pol ! agr) } };
-                contr = table { pol => table { agr => WRAP tag (x.auxForms.contr ! pol ! agr) } };
-                pres = table { pol => table { agr => WRAP tag (x.auxForms.pres ! pol ! agr) } }
-            };
-            nonAuxForms = {
-                pres = table { agr => WRAP tag (x.nonAuxForms.pres ! agr) };
-                past = WRAP tag x.nonAuxForms.past
-            };
-            c2 = WRAP tag x.c2;
-            gapInMiddle = x.gapInMiddle;
-            missingAdv = x.missingAdv
-        };
+--        WRAP_VPSlash tag x = lin VPSlash { 
+--            p = WRAP tag x.p;
+--            ad = table { agr => WRAP tag (x.ad ! agr) };
+--            s2 = table { agr => WRAP tag (x.s2 ! agr) };
+--            ext = WRAP tag x.ext;
+--            prp = WRAP tag x.prp;
+--            ptp = WRAP tag x.ptp;
+--            inf = WRAP tag x.inf;
+--            isSimple = x.isSimple;
+--            isAux = x.isAux;
+--            auxForms = {
+--                past = table { pol => table { agr => WRAP tag (x.auxForms.past ! pol ! agr) } };
+--                contr = table { pol => table { agr => WRAP tag (x.auxForms.contr ! pol ! agr) } };
+--                pres = table { pol => table { agr => WRAP tag (x.auxForms.pres ! pol ! agr) } }
+--            };
+--            nonAuxForms = {
+--                pres = table { agr => WRAP tag (x.nonAuxForms.pres ! agr) };
+--                past = WRAP tag x.nonAuxForms.past
+--            };
+--            c2 = WRAP tag x.c2;
+--            gapInMiddle = x.gapInMiddle;
+--            missingAdv = x.missingAdv
+--        };
 
         WRAP_VQ tag x = { 
             s = table { vf => WRAP tag (x.s ! vf) }; 

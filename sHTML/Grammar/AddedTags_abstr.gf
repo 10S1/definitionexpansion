@@ -9,6 +9,16 @@ abstract AddedTags_abstr = Grammar ** {
         
     
 
+        -- Additional categories
+
+        WRAP_Adv : Tag -> Adv -> Adv;
+
+        WRAP_Utt : Tag -> Utt -> Utt;
+
+
+
+        -- Categories from https://www.grammaticalframework.org/lib/doc/synopsis/index.html
+
         WRAP_A : Tag -> A -> A;
         WRAP_A2 : Tag -> A2 -> A2;
         WRAP_ACard : Tag -> ACard -> ACard;
