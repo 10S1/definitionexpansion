@@ -1,1 +1,1 @@
-concrete Parentheticals_concr of Parentheticals_abstr = ParentheticalsParentheses_concr, ParentheticalsEmDashes_concr ** {}
+concrete Parentheticals_concr of Parentheticals_abstr = ParentheticalsParentheses_concr, ParentheticalsEmDashes_concr, ParentheticalsIE_concr ** {}

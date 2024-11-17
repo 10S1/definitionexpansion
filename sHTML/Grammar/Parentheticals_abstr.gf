@@ -1,1 +1,1 @@
-abstract Parentheticals_abstr = ParentheticalsParentheses_abstr, ParentheticalsEmDashes_abstr ** {}
+abstract Parentheticals_abstr = ParentheticalsParentheses_abstr, ParentheticalsEmDashes_abstr, ParentheticalsIE_abstr ** {}
