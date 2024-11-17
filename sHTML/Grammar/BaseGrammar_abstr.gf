@@ -1,1 +1,1 @@
-abstract BaseGrammar_abstr = Grammar, MathTerms, MorphoDictEngAbs, AddedTags_abstr, AddedStructures_abstr, AddedWords_abstr, PlaceholderCat_abstr ** {}
+abstract BaseGrammar_abstr = Grammar, MathTerms, MorphoDictEngAbs, AddedTags_abstr, AddedStructures_abstr, AddedWords_abstr, Parentheticals_abstr ** {}
