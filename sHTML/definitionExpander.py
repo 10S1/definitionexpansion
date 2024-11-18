@@ -79,6 +79,7 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
 
     ### STATEMENT ###
     #Parse the statement sentence
+    print("PFAD: " + str(statement_htmlfile_path))
     statement_shtml = gfxml.parse_shtml(statement_htmlfile_path)
     #Simplify the tags (e.g. replace "<div shtml:sourceref="http://mathhub.info/smglom/algebra/mod/monoid.en.tex#367.15.1:380.15.14" class="rustex-VFil">" by "< 15 >")
     statement_xs, statement_string = gfxml.get_gfxml_string(statement_shtml)
