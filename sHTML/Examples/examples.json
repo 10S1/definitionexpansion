@@ -1,5 +1,13 @@
 {
     "E001": {
+        "statement": "definitionexpansion\\sHTML\\Examples\\statementE001.en.xhtml",
+        "definition": "definitionexpansion\\sHTML\\Examples\\empty.en.xhtml",
+        "definiendum": "https://gl.mathhub.info/smglom/sets?mod/empty.en?empty",
+        "output" : "Assume that <math><mi>X</mi></math> has no elements.",
+        "IEoutput" : "Assume that <math><mi>X</mi></math> is <span data-symref=\"https://gl.mathhub.info/smglom/sets?mod/empty.en?empty\">empty</span> (i.e. <math><mi>X</mi></math> has no elements)."
+    },
+
+    "E002": {
         "statement": "definitionexpansion\\sHTML\\Examples\\ring.en.xhtml",
         "definition": "definitionexpansion\\sHTML\\Examples\\monoid.en.xhtml",
         "definiendum": "monoid"
