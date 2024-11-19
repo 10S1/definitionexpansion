@@ -33,6 +33,18 @@ def uppercase_first_letter(s: str) -> str:
     if s and s[0].islower():
         return s[0].upper() + s[1:]
     return s
+def make_sentence_GfConform(sentence: str) -> str:
+    """Brings a normal sentence into a format, which is parsable by the generated grammar, which is used in the Grammatical Framework."""
+    sentence_pp = sentence.replace("\\", "\\\\")
+    sentence_pp = sentence_pp.strip()
+    if sentence_pp.endswith(" ."):
+        sentence_pp = sentence_pp[:-2]
+    sentence_pp = lowercase_first_letter(sentence_pp)
+    return sentence_pp
+def postprocessSentence(sentence: str) -> str:
+    """Brings a sentence, which is in a format, which is parsable by the Grammatical Framework, back to a normal format."""
+    sentence = (uppercase_first_letter(sentence).replace("\\\\", "\\")) + "."
+    return sentence
 
 def linearizeTree(shell: gf.GFShellRaw, tree) -> str:
     cmd_linearize = 'linearize ' + str(tree)
@@ -52,6 +64,10 @@ def get_definiensContent(definiendum, definition_tree):
             return definiensContent_tree
     return None
 
+def rename_vars(definiens_content_tree, statement_tree):
+    #TODO: Wie kann ich innerhalb von Tag-Nodes überhaupt einzelne Variablen erkennen?
+    return definiens_content_tree
+
 def get_alignedCategories_tree(shell: gf.GFShellRaw, IN_string_supposed: str, IN_tree_actual: str):
     cat_supposed = "" # get_Cat_of_String(shell, IN_string_supposed)
     cat_actual = IN_tree_actual
@@ -65,11 +81,13 @@ def get_alignedCategories_tree(shell: gf.GFShellRaw, IN_string_supposed: str, IN
         tree_actual = IN_tree_actual
     return tree_actual
 
-def get_extendedVariables_tree():
-    return None
+def get_extendedVariables_tree(statement_tree):
+    #TODO: Add Variable after Nouns, which are in relation to the definiendum
+    return statement_tree
 
-def get_alignedVariables_tree(statement_tree, statement_tree_extendedVariables, assignedVariables):
-    return None
+def get_alignedVariables_tree(definition_tree, assignedVariables):
+    #TODO: Replace variables/tags through their assigned variables/tags
+    return definition_tree
 
 def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendum: str):
     #Initialize GF shell
@@ -77,20 +95,21 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     print(shell.handle_command(f"import {PATH_gf_concrGrammar}"))
 
 
+    ########## PROCESS INPUT #####################################################################################
     ### STATEMENT ###
     #Parse the statement sentence
-    print("PFAD: " + str(statement_htmlfile_path))
     statement_shtml = gfxml.parse_shtml(statement_htmlfile_path)
     #Simplify the tags (e.g. replace "<div shtml:sourceref="http://mathhub.info/smglom/algebra/mod/monoid.en.tex#367.15.1:380.15.14" class="rustex-VFil">" by "< 15 >")
     statement_xs, statement_string = gfxml.get_gfxml_string(statement_shtml)
     statement_sentences = gfxml.sentence_tokenize(statement_string)
     for s in statement_sentences:
         print(s)
-        gf_ast = shell.handle_command(f'p "{s}"')
+        s_preprocessed = make_sentence_GfConform(s)
+        print(s_preprocessed)
+        gf_ast = shell.handle_command(f'p "{s_preprocessed}"')
         print(gf_ast)
         statement_tree = gfxml.build_tree(statement_xs, gf_ast)
         print(statement_tree)
-
 
     ### DEFINITION ###
     #Parse the definition sentence
@@ -100,39 +119,42 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     definition_sentences = gfxml.sentence_tokenize(definition_string)
     for s in definition_sentences:
         print(s)
-        gf_ast = shell.handle_command(f'p "{s}"')
+        s_preprocessed = make_sentence_GfConform(s)
+        print(s_preprocessed)
+        gf_ast = shell.handle_command(f'p "{s_preprocessed}"')
         print(gf_ast)
         definition_tree = gfxml.build_tree(definition_xs, gf_ast)
         print(definition_tree)
 
     #Extract the definiens content out of the definition sentence
     definiens_content_tree = get_definiensContent(definiendum, definition_tree)
+    if definiens_content_tree == None: print("ERROR: No definiens_content_tree found in the definition sentence.")
+    ##############################################################################################################
 
 
-    ##########-##########-##########-##########-##########
 
-
+    ########## MERGE TREES #######################################################################################
     #IF NECESSARY: Align variables
     #Rename variables in definiens content tree
-    #TODO
+    definiens_content_tree = rename_vars(definiens_content_tree, statement_tree) #TODO: Does not need the trees but the tag contents
 
     #Assign variables and introduce variables in statement tree (if necessary)
-    statement_tree_extendedVariables = get_extendedVariables_tree()
-    assignedVariables = variableAssigner.get_assignedVariables(statement_tree_extendedVariables, definition_tree, definiens_content_tree)
+    statement_tree_extendedVariables = get_extendedVariables_tree(statement_tree) #TODO
+    assignedVariables = variableAssigner.get_assignedVariables(statement_tree_extendedVariables, definition_tree, definiens_content_tree) #TODO
     for var in assignedVariables:
         if var["replacedVar"] not in definiens_content_tree:
             statement_tree = statement_tree_extendedVariables
 
     #Modify definiens content tree 
-    definiens_content_tree = get_alignedVariables_tree(statement_tree, statement_tree_extendedVariables, assignedVariables) #TODO
+    definiens_content_tree = get_alignedVariables_tree(statement_tree, assignedVariables) #TODO
 
     #Align the category of the definiens content to the category of the definiendum
     merged_tree = get_alignedCategories_tree(statement_tree, definiens_content_tree, definiendum) #TODO
+    ##############################################################################################################
 
 
-    ##########-##########-##########-##########-#########
 
-
+    ########## CREATE OUTPUT #####################################################################################
     #Linearize definiens content
     recovery_info, gf_input = merged_tree.to_gf()
     print(gf_input)
@@ -140,7 +162,12 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     print(gf_lin)
     merged_sentence = gfxml.final_recovery(gf_lin, recovery_info)
     print(merged_sentence)
-    return merged_sentence
+    final_sentence = postprocessSentence(merged_sentence)
+    print(final_sentence)
+    ##############################################################################################################
+
+
+    return final_sentence
 
 
 

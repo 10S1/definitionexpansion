@@ -1,10 +1,17 @@
-def get_assignedVariables():
-    return None
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../Resources')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../gfxml')))
+import gf
+import gfxml
+
+def get_assignedVariables(statement_tree_extendedVariables, definition_tree, definiens_content_tree):
+    return []
 
 """
 # Gleichwertige Strukturen
-admissible heuristic
-heuristic (h for Π) is admissible
+admissible heuristic h
+heuristic h is admissible
 
 X is non-empty
 A set Y is non-empty 
