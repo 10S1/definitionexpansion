@@ -265,7 +265,7 @@ def build_tree(nodes: list[X], ast_str: str) -> Node:
                 elif (ast_str[i].isalnum() or ast_str[i] in {'_', '\'', '/', '?', ':', '#', '.', '-'}):
                     children.append(G(read_label()))
                 else:
-                    raise ValueError(f'Unexpected character in AST: {ast_str[i]}')
+                    raise ValueError(f'Unexpected character in AST: {ast_str[i]!r}')
             return G(tag, children)
     
     node = read_node()
