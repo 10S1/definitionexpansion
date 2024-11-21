@@ -1,11 +1,7 @@
-concrete AddedTags_concr of AddedTags_abstr = GrammarEng ** open ParadigmsEng, SymbolicEng, ResEng, IrregEng, ExtraEng, ExtendEng in {	
-
-    lincat
-        Tag = {s: Str};
-        
+concrete AddedTags_concr of AddedTags_abstr = GrammarEng, MathTags_concr ** open ParadigmsEng, SymbolicEng, ResEng, IrregEng, ExtraEng, ExtendEng in {	    
 
     lin
-        tag i = {s = i.s};
+--        tag i = {s = i.s};
 
 
 
@@ -167,12 +163,12 @@ concrete AddedTags_concr of AddedTags_abstr = GrammarEng ** open ParadigmsEng, S
             a = x.a 
         };
 
-        WRAP_Num tag x = { 
-            s = table { b => table { c => WRAP tag (x.s ! b ! c) } };
-            sp = table { b => table { c => WRAP tag (x.sp ! b ! c) } };
-            n = x.n;
-            hasCard = x.hasCard
-        };
+--        WRAP_Num tag x = { 
+--            s = table { b => table { c => WRAP tag (x.s ! b ! c) } };
+--            sp = table { b => table { c => WRAP tag (x.sp ! b ! c) } };
+--            n = x.n;
+--            hasCard = x.hasCard
+--        };
 
         WRAP_Numeral tag x = { 
             s = table { b => table { co => table { c => WRAP tag (x.s ! b ! co ! c) } } };

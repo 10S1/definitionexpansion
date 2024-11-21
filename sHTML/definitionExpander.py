@@ -22,7 +22,7 @@ import variableAssigner
 PATH_exe_gf = shutil.which('gf')
 if PATH_exe_gf is None:
     print("ERROR: Path to gf.exe not found. \nCheck whether the Grammatical Framework is installed and the environment variable is set.")
-PATH_gf_concrGrammar = "definitionexpansion\sHTML\Grammar\BaseGrammar_concr.gf"
+PATH_gf_concrGrammar = "sHTML\Grammar\BaseGrammar_concr.gf"
 ###------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 def lowercase_first_letter(s: str) -> str:
@@ -103,13 +103,18 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     statement_xs, statement_string = gfxml.get_gfxml_string(statement_shtml)
     statement_sentences = gfxml.sentence_tokenize(statement_string)
     for s in statement_sentences:
-        print(s)
+        print("s: " + str(s))
         s_preprocessed = make_sentence_GfConform(s)
-        print(s_preprocessed)
+        print("s_preprocessed: " + str(s_preprocessed))
         gf_ast = shell.handle_command(f'p "{s_preprocessed}"')
-        print(gf_ast)
-        statement_tree = gfxml.build_tree(statement_xs, gf_ast)
-        print(statement_tree)
+        #print("gf_ast: " + str(gf_ast))
+        all_statement_trees = []
+        for line in gf_ast.splitlines():
+            #print("line: " + str(line))
+            statement_tree_temp = gfxml.build_tree(statement_xs, line)
+            all_statement_trees.append(statement_tree_temp)
+        statement_tree = all_statement_trees[0] #For now... TODO: Go through all trees. But which one to choose?
+        print("statement_tree: " + str(statement_tree))
 
     ### DEFINITION ###
     #Parse the definition sentence
@@ -125,6 +130,20 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
         print(gf_ast)
         definition_tree = gfxml.build_tree(definition_xs, gf_ast)
         print(definition_tree)
+
+    for s in definition_sentences:
+        print("s: " + str(s))
+        s_preprocessed = make_sentence_GfConform(s)
+        print("s_preprocessed: " + str(s_preprocessed))
+        gf_ast = shell.handle_command(f'p "{s_preprocessed}"')
+        #print("gf_ast: " + str(gf_ast))
+        all_definition_trees = []
+        for line in gf_ast.splitlines():
+            #print("line: " + str(line))
+            definition_tree_temp = gfxml.build_tree(definition_xs, line)
+            all_definition_trees.append(definition_tree_temp)
+        definition_tree = all_definition_trees[0] #For now... TODO: Go through all trees. But which one to choose?
+        print("definition_tree: " + str(definition_tree))
 
     #Extract the definiens content out of the definition sentence
     definiens_content_tree = get_definiensContent(definiendum, definition_tree)
@@ -174,7 +193,7 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
 
 
 def testE001(example_name):
-    with open("definitionexpansion\\sHTML\\Examples\\examples.json", 'r') as file:
+    with open("sHTML\Examples\examples.json", 'r') as file:
         examples = json.load(file)
     example = examples[example_name]
     statement_htmlfile_path = example["statement"]

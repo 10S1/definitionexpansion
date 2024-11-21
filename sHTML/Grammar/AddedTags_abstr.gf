@@ -1,11 +1,7 @@
-abstract AddedTags_abstr = Grammar ** {
-
-    cat
-        Tag;
-
+abstract AddedTags_abstr = Grammar, MathTags_abstr ** {
 
     fun
-        tag : Int -> Tag;
+--         tag : Int -> Tag;
 
 
 
@@ -55,7 +51,7 @@ abstract AddedTags_abstr = Grammar ** {
         WRAP_N2 : Tag -> N2 -> N2;
         WRAP_N3 : Tag -> N3 -> N3;
         WRAP_NP : Tag -> NP -> NP;
-        WRAP_Num : Tag -> Num -> Num;
+        -- WRAP_Num : Tag -> Num -> Num;
 
         WRAP_Numeral : Tag -> Numeral -> Numeral;
         WRAP_Ord : Tag -> Ord -> Ord;
