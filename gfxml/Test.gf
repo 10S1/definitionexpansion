@@ -7,6 +7,7 @@ abstract Test = Xml ** {
     fun
         john : NP;
         mary : NP;
+        formula_NP : MathNode -> NP;
         run : VP;
         mkS : NP -> VP -> S;
 

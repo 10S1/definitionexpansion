@@ -46,9 +46,10 @@ class X(Node):
 
     def _to_gf(self, _tags: list[tuple[str, str]]) -> str:
         tag_num = len(_tags)
-        if self.wrapfun is None:
+        # if self.wrapfun is None:
+        if self.tag == 'math':
             _tags.append(self.pure_node_strings())
-            return f'(tag {tag_num})'
+            return f'(wrap_math (tag {tag_num}) epsilon)'
         else:
             _tags.append((f'<{self.tag} ' + ' '.join(f'{k}="{v}"' for k, v in self.attrs.items()) + '>', f'</{self.tag}>'))
             return f'({self.wrapfun} (tag {tag_num}) {" ".join(child._to_gf(_tags) for child in self.children)})'
@@ -67,6 +68,9 @@ class XT(Node):
 
     def pure_x_node(self) -> bool:
         return True
+
+    def pure_node_strings(self) -> tuple[str, str]:
+        return self.text, ''
 
 class G(Node):
     __match_args__ = ('node', 'children')
@@ -123,8 +127,8 @@ def get_gfxml_string(shtml: etree._ElementTree) -> tuple[list[X], str]:
         if node.tag.endswith('math'):
             # don't recurse into math nodes - place them as-is
             nodes.append(xify(node))
-            strings.append(f'< {tag_num} >')
-            strings.append(f'</ {tag_num} >')
+            strings.append(f'<m {tag_num} >')
+            strings.append(f'</m {tag_num} >')
             if node.tail:
                 strings.append(node.tail)
             return
@@ -158,6 +162,9 @@ def sentence_tokenize(text: str) -> list[str]:
     # simplify whitespace
     text = re.sub(r'\s+', ' ', text)
 
+    # replace math tags <m i > </m i > with Xi
+    text = re.sub(r'<m (?P<i>[0-9]+) ></m [0-9]+ >', r'X\g<i>', text)
+
     # we will remove all tags, but remember them to reinsert them later
     tags = [[]]   # tags[i] is the list of tags that are should be reinserted at position i
     # open_tags = [[]]   # open_tags[i] is the list of tags that are open at position i
@@ -178,6 +185,7 @@ def sentence_tokenize(text: str) -> list[str]:
             assert len(tags) == len(without_tags) + 1
         i += 1
 
+    print(text)
 
     nlp = stanza_tokenizer()
     doc = nlp(without_tags)
@@ -208,6 +216,8 @@ def sentence_tokenize(text: str) -> list[str]:
         sentence = sentence.replace('>', '> ')
         sentence = sentence.replace('<', ' <')
 
+        sentence = re.sub(r'\bX(?P<i>[0-9]+)\b', r'<m \g<i> > </m \g<i> >', sentence)
+
         sentences.append(sentence)
 
     return sentences
@@ -229,9 +239,9 @@ def build_tree(nodes: list[X], ast_str: str) -> Node:
         nonlocal i
         for j in range(len(s)):
             if i + j >= len(ast_str):
-                raise ValueError(f'Expected {s}, got end of string')
+                raise ValueError(f'Expected {s!r}, got end of string')
             if ast_str[i + j] != s[j]:
-                raise ValueError(f'Expected {s}, got {ast_str[i:i+j+1]}')
+                raise ValueError(f'Expected {s!r}, got {ast_str[i:i+j+1]!r}')
         i += len(s)
     
     def read_tag() -> int:
@@ -248,7 +258,10 @@ def build_tree(nodes: list[X], ast_str: str) -> Node:
         if tag.startswith('wrap'):
             node = deepcopy(nodes[read_tag()])
             node.wrapfun = tag
-            node.children = [read_node()]
+            if tag != 'wrap_math':
+                node.children = [read_node()]
+            else:
+                read_node()
             return node
         else:
             children = []
@@ -278,17 +291,13 @@ def build_tree(nodes: list[X], ast_str: str) -> Node:
 
 def final_recovery(string: str, recovery_info: list[tuple[str, str]]) -> str:
     for i, (open_tag, close_tag) in enumerate(recovery_info):
-        string = string.replace(f'< {i} >', open_tag)
-        string = string.replace(f'</ {i} >', close_tag)
+        if open_tag.startswith('<math'):
+            string = string.replace(f'<m {i} >', open_tag)
+            string = string.replace(f'</m {i} >', close_tag)
+        else:
+            string = string.replace(f'< {i} >', open_tag)
+            string = string.replace(f'</ {i} >', close_tag)
     return string
-
-
-def main():
-    import sys
-    shtml = parse_shtml(Path(sys.argv[1]))
-    xs, s = get_gfxml_string(shtml)
-    # print(re.sub(r'\s+', ' ', s))
-    print(sentence_tokenize(s))
 
 
 def test():
@@ -300,12 +309,13 @@ def test():
 
     shtml = parse_shtml(Path(__file__).parent / 'test.xhtml')
     xs, string = get_gfxml_string(shtml)
+    print('XS', xs)
     sentences = sentence_tokenize(string)
     shell = gf.GFShellRaw('gf')
     output = shell.handle_command('i ' + str(Path(__file__).parent / 'TestEng.gf'))
     for s in sentences:
         print(s)
-        gf_ast = shell.handle_command(f'p "{s}"')
+        gf_ast = shell.handle_command(f'p "{s[:-1]}"')
         print(gf_ast)
         tree = build_tree(xs, gf_ast)
         print(tree)
@@ -315,6 +325,7 @@ def test():
                 g.node = 'mary'
         print(tree)
         recovery_info, gf_input = tree.to_gf()
+        print('RECOVERY', recovery_info)
         print(gf_input)
         gf_lin = shell.handle_command(f'linearize {gf_input}')
         print(gf_lin)
@@ -322,6 +333,7 @@ def test():
         print(result)
 
 
-# main()
-# test()
+if __name__ == '__main__':
+    # main()
+    test()
 

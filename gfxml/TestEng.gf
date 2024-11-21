@@ -8,6 +8,7 @@ concrete TestEng of Test = XmlConcr ** {
         john = "John";
         mary = "Mary";
         run = "runs";
+        formula_NP m = m.s;
         mkS np vp = np ++ vp;
 
         wrap_NP t np = wrap t np;
