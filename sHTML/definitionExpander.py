@@ -52,23 +52,30 @@ def linearizeTree(shell: gf.GFShellRaw, tree) -> str:
     res_sentence = uppercase_first_letter(linearizedTree)
     return res_sentence
 
-def get_definiensContent(definiendum, definition_tree):
+def get_definiensContent(definiendum, definition_tree, definition_xs):
+    #print("\n definition_tree: " + str(definition_tree))
+    #print("\n definition_xs: " + str(definition_xs))
     match definition_tree:
-        #TODO: What does definiens node look like?
-        case gfxml.G(_, [gfxml.X(_, [gfxml.G('john') as g], _), _]):
-            #g.node = 'mary'
-            return ""
-    for child in definition_tree:
-        definiensContent_tree = get_definiensContent(definiendum, child)
-        if definiensContent_tree != None:
-            return definiensContent_tree
+        case gfxml.G(rule_wrap, [gfxml.G('tag', [child]), definiens_content_part]):
+            tagID = child.node
+            tag = definition_xs[int(tagID)]
+            if ("data-definiens-of" in tag.attrs) and (tag.attrs["data-definiens-of"] == definiendum):
+                return gfxml.G(rule_wrap, [gfxml.G('tag', child), definiens_content_part])
+    
+    if isinstance(definition_tree, gfxml.G):
+        for child in definition_tree.children:
+            definiensContent_tree = get_definiensContent(definiendum, child, definition_xs)
+            if definiensContent_tree is not None:
+                return definiensContent_tree
+            
     return None
 
 def rename_vars(definiens_content_tree, statement_tree):
     #TODO: Wie kann ich innerhalb von Tag-Nodes überhaupt einzelne Variablen erkennen?
     return definiens_content_tree
 
-def get_alignedCategories_tree(shell: gf.GFShellRaw, IN_string_supposed: str, IN_tree_actual: str):
+def get_alignedCategories_tree(statement_tree, definiens_content_tree, definiendum):
+    return definiens_content_tree
     cat_supposed = "" # get_Cat_of_String(shell, IN_string_supposed)
     cat_actual = IN_tree_actual
     if cat_supposed != cat_actual:
@@ -122,14 +129,6 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     #Simplify the tags (e.g. replace "<div shtml:sourceref="http://mathhub.info/smglom/algebra/mod/monoid.en.tex#367.15.1:380.15.14" class="rustex-VFil">" by "< 15 >")
     definition_xs, definition_string = gfxml.get_gfxml_string(definition_shtml)
     definition_sentences = gfxml.sentence_tokenize(definition_string)
-    for s in definition_sentences:
-        print(s)
-        s_preprocessed = make_sentence_GfConform(s)
-        print(s_preprocessed)
-        gf_ast = shell.handle_command(f'p "{s_preprocessed}"')
-        print(gf_ast)
-        definition_tree = gfxml.build_tree(definition_xs, gf_ast)
-        print(definition_tree)
 
     for s in definition_sentences:
         print("s: " + str(s))
@@ -146,8 +145,9 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
         print("definition_tree: " + str(definition_tree))
 
     #Extract the definiens content out of the definition sentence
-    definiens_content_tree = get_definiensContent(definiendum, definition_tree)
+    definiens_content_tree = get_definiensContent(definiendum, definition_tree, definition_xs)
     if definiens_content_tree == None: print("ERROR: No definiens_content_tree found in the definition sentence.")
+    print("\n definiens_content_tree: " + str(definiens_content_tree))
     ##############################################################################################################
 
 
