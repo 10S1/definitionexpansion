@@ -255,7 +255,7 @@ def build_tree(nodes: list[X], ast_str: str) -> Node:
     def read_node() -> Node:
         nonlocal i
         tag = read_label()
-        if tag.startswith('wrap'):
+        if tag.lower().startswith('wrap'):
             node = deepcopy(nodes[read_tag()])
             node.wrapfun = tag
             if tag != 'wrap_math':
