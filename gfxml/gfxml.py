@@ -185,7 +185,7 @@ def sentence_tokenize(text: str) -> list[str]:
             assert len(tags) == len(without_tags) + 1
         i += 1
 
-    print(text)
+    #print(text)
 
     nlp = stanza_tokenizer()
     doc = nlp(without_tags)
