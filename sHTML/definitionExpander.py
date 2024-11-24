@@ -53,62 +53,39 @@ def linearizeTree(shell: gf.GFShellRaw, tree) -> str:
     return linearizedTree #res_sentence
 
 def get_definiensContent(definiendum, tree):
-    """ test = G('ConjS', [G('iff_Conj', []), G('BaseS', [G('UseCl', [G('TTAnt', [G('TPres', []), G('ASimul', [])]), 
-                    G('PPos', []), G('PredVP', [G('DetCN', [G('DetQuant', [G('IndefArt', []), G('NumSg', [])]), 
-                    G('ApposCN', [G('UseN', [X('span', [G('set_N', [])], {'data-symref': 'https://gl.mathhub.info/smglom/sets?mod/set.en?set'}, 'WRAP_N')]), 
-                    G('formula_NP', [X('math', [X('mi', [XT('Y')], {}, None)], {}, 'wrap_math')])])]), 
-                    G('UseComp', [G('CompAP', [G('PositA', [X('span', [G('empty_A', [])], {'data-definiendum': 'https://gl.mathhub.info/smglom/sets?mod/empty.en?empty'}, 'WRAP_A')])])])])]), 
-                    G('UseCl', [G('TTAnt', [G('TPres', []), G('ASimul', [])]), 
-                    G('PPos', []), X('span', [G('', [G('PredVP', [G('formula_NP', [X('math', [X('mi', [XT('Y')], {}, None)], {}, 'wrap_math')]), 
-                    G('ComplSlash', [G('SlashV2a', [G('have_V2', [])]), G('DetCN', [G('DetQuant', [G('no_Quant', []), G('NumPl', [])]), 
-                    G('UseN', [G('element_N', [])])])])])])], {'data-definiens-of': 'https://gl.mathhub.info/smglom/sets?mod/empty.en?empty'}, 'WRAP_Cl')])])]) """
-    
-
-    #match definition_tree:
-        # X('span', [G('', [G('PredVP', [G('formula_NP', [X('math', [X('mi', [XT('Y')], {}, None)], {}, 'wrap_math')]), 
-        #             G('ComplSlash', [G('SlashV2a', [G('have_V2', [])]), G('DetCN', [G('DetQuant', [G('no_Quant', []), G('NumPl', [])]), 
-        #             G('UseN', [G('element_N', [])])])])])])], {'data-definiens-of': 'https://gl.mathhub.info/smglom/sets?mod/empty.en?empty'}, 'WRAP_Cl')
-
-    if isinstance(tree, gfxml.G):
-        for child in tree.children:
-            result = get_definiensContent(definiendum, child)
-            if result is not None:
-                return result
-    elif isinstance(tree, gfxml.X) and tree.tag == 'span':
-        print(str(tree))
+    if isinstance(tree, gfxml.X) and tree.tag == 'span':
         attrs = tree.attrs
         if ("data-definiens-of" in attrs) and (attrs["data-definiens-of"] == definiendum):
             return tree
         for child in tree.children:
-            result = get_definiensContent(definiendum, child)
-            if result is not None:
-                return result
-    return None
-    """         
-    case gfxml.G(outerRule, [gfxml.X('span', [child], attrs), wrapRule]) if "data-definiens-of" in attrs and attrs["data-definiens-of"] == definiendum:
-            return gfxml.G(outerRule, [gfxml.X('span', [child], attrs), wrapRule])
-    
-    if isinstance(definition_tree, gfxml.G):
-        for child in definition_tree.children:
-            definiensContent_tree = get_definiensContent(definiendum, child, definition_xs)
-            if definiensContent_tree is not None:
-                return definiensContent_tree 
-    """
-
-
-def get_deleteTree(definiendum, statement_tree, statement_xs):
-    match statement_tree:
-        case gfxml.G(a, [child]):
-            if isinstance(child, gfxml.X):
-                if "data-symref" in child.attrs:
-                    if child.attrs["data-symref"] == definiendum:
-                        return gfxml.X(a, [child])
-
-    if isinstance(statement_tree, gfxml.G):
-        for child in statement_tree.children:
-            definiensContent_tree = get_deleteTree(definiendum, child, statement_xs)
+            definiensContent_tree = get_definiensContent(definiendum, child)
             if definiensContent_tree is not None:
                 return definiensContent_tree
+            
+    elif isinstance(tree, gfxml.G):
+        for child in tree.children:
+            definiensContent_tree = get_definiensContent(definiendum, child)
+            if definiensContent_tree is not None:
+                return definiensContent_tree
+            
+    return None
+
+
+def get_deleteTree(definiendum, tree):
+    if isinstance(tree, gfxml.X) and tree.tag == 'span':
+        attrs = tree.attrs
+        if ("data-symref" in attrs) and (attrs["data-symref"] == definiendum):
+            return tree
+        for child in tree.children:
+            delete_tree = get_deleteTree(definiendum, child)
+            if delete_tree is not None:
+                return delete_tree
+
+    elif isinstance(tree, gfxml.G):
+        for child in tree.children:
+            delete_tree = get_deleteTree(definiendum, child)
+            if delete_tree is not None:
+                return delete_tree
             
     return None
 
@@ -116,8 +93,8 @@ def rename_vars(definiens_content_tree, statement_tree):
     #TODO: Wie kann ich innerhalb von Tag-Nodes überhaupt einzelne Variablen erkennen?
     return definiens_content_tree
 
-def get_merged_tree(statement_tree, statement_xs, definiens_content_tree, definition_xs, definiendum):
-    deleteTree = get_deleteTree(definiendum, statement_tree, statement_xs)
+def get_merged_tree(statement_tree, definiens_content_tree, definiendum):
+    deleteTree = get_deleteTree(definiendum, statement_tree)
     print("\ndeletedTree: " + str(deleteTree))
     return definiens_content_tree
 
@@ -204,7 +181,7 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     definiens_content_tree = get_alignedVariables_tree(statement_tree, assignedVariables) #TODO
 
     #Align the category of the definiens content to the category of the definiendum
-    merged_tree = get_merged_tree(statement_tree, statement_xs, definiens_content_tree, definition_xs, definiendum) #TODO
+    merged_tree = get_merged_tree(statement_tree, definiens_content_tree, definiendum) #TODO
     print("\nmerged_tree: " + str(merged_tree))
     ##############################################################################################################
 
