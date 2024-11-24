@@ -49,22 +49,64 @@ def postprocessSentence(sentence: str) -> str:
 def linearizeTree(shell: gf.GFShellRaw, tree) -> str:
     cmd_linearize = 'linearize ' + str(tree)
     linearizedTree = shell.handle_command(cmd_linearize)
-    res_sentence = uppercase_first_letter(linearizedTree)
-    return res_sentence
+    #res_sentence = uppercase_first_letter(linearizedTree)
+    return linearizedTree #res_sentence
 
-def get_definiensContent(definiendum, definition_tree, definition_xs):
-    #print("\n definition_tree: " + str(definition_tree))
-    #print("\n definition_xs: " + str(definition_xs))
-    match definition_tree:
-        case gfxml.G(rule_wrap, [gfxml.G('tag', [child]), definiens_content_part]):
-            tagID = child.node
-            tag = definition_xs[int(tagID)]
-            if ("data-definiens-of" in tag.attrs) and (tag.attrs["data-definiens-of"] == definiendum):
-                return gfxml.G(rule_wrap, [gfxml.G('tag', child), definiens_content_part])
+def get_definiensContent(definiendum, tree):
+    """ test = G('ConjS', [G('iff_Conj', []), G('BaseS', [G('UseCl', [G('TTAnt', [G('TPres', []), G('ASimul', [])]), 
+                    G('PPos', []), G('PredVP', [G('DetCN', [G('DetQuant', [G('IndefArt', []), G('NumSg', [])]), 
+                    G('ApposCN', [G('UseN', [X('span', [G('set_N', [])], {'data-symref': 'https://gl.mathhub.info/smglom/sets?mod/set.en?set'}, 'WRAP_N')]), 
+                    G('formula_NP', [X('math', [X('mi', [XT('Y')], {}, None)], {}, 'wrap_math')])])]), 
+                    G('UseComp', [G('CompAP', [G('PositA', [X('span', [G('empty_A', [])], {'data-definiendum': 'https://gl.mathhub.info/smglom/sets?mod/empty.en?empty'}, 'WRAP_A')])])])])]), 
+                    G('UseCl', [G('TTAnt', [G('TPres', []), G('ASimul', [])]), 
+                    G('PPos', []), X('span', [G('', [G('PredVP', [G('formula_NP', [X('math', [X('mi', [XT('Y')], {}, None)], {}, 'wrap_math')]), 
+                    G('ComplSlash', [G('SlashV2a', [G('have_V2', [])]), G('DetCN', [G('DetQuant', [G('no_Quant', []), G('NumPl', [])]), 
+                    G('UseN', [G('element_N', [])])])])])])], {'data-definiens-of': 'https://gl.mathhub.info/smglom/sets?mod/empty.en?empty'}, 'WRAP_Cl')])])]) """
+    
+
+    #match definition_tree:
+        # X('span', [G('', [G('PredVP', [G('formula_NP', [X('math', [X('mi', [XT('Y')], {}, None)], {}, 'wrap_math')]), 
+        #             G('ComplSlash', [G('SlashV2a', [G('have_V2', [])]), G('DetCN', [G('DetQuant', [G('no_Quant', []), G('NumPl', [])]), 
+        #             G('UseN', [G('element_N', [])])])])])])], {'data-definiens-of': 'https://gl.mathhub.info/smglom/sets?mod/empty.en?empty'}, 'WRAP_Cl')
+
+    if isinstance(tree, gfxml.G):
+        for child in tree.children:
+            result = get_definiensContent(definiendum, child)
+            if result is not None:
+                return result
+    elif isinstance(tree, gfxml.X) and tree.tag == 'span':
+        print(str(tree))
+        attrs = tree.attrs
+        if ("data-definiens-of" in attrs) and (attrs["data-definiens-of"] == definiendum):
+            return tree
+        for child in tree.children:
+            result = get_definiensContent(definiendum, child)
+            if result is not None:
+                return result
+    return None
+    """         
+    case gfxml.G(outerRule, [gfxml.X('span', [child], attrs), wrapRule]) if "data-definiens-of" in attrs and attrs["data-definiens-of"] == definiendum:
+            return gfxml.G(outerRule, [gfxml.X('span', [child], attrs), wrapRule])
     
     if isinstance(definition_tree, gfxml.G):
         for child in definition_tree.children:
             definiensContent_tree = get_definiensContent(definiendum, child, definition_xs)
+            if definiensContent_tree is not None:
+                return definiensContent_tree 
+    """
+
+
+def get_deleteTree(definiendum, statement_tree, statement_xs):
+    match statement_tree:
+        case gfxml.G(a, [child]):
+            if isinstance(child, gfxml.X):
+                if "data-symref" in child.attrs:
+                    if child.attrs["data-symref"] == definiendum:
+                        return gfxml.X(a, [child])
+
+    if isinstance(statement_tree, gfxml.G):
+        for child in statement_tree.children:
+            definiensContent_tree = get_deleteTree(definiendum, child, statement_xs)
             if definiensContent_tree is not None:
                 return definiensContent_tree
             
@@ -74,19 +116,10 @@ def rename_vars(definiens_content_tree, statement_tree):
     #TODO: Wie kann ich innerhalb von Tag-Nodes überhaupt einzelne Variablen erkennen?
     return definiens_content_tree
 
-def get_alignedCategories_tree(statement_tree, definiens_content_tree, definiendum):
+def get_merged_tree(statement_tree, statement_xs, definiens_content_tree, definition_xs, definiendum):
+    deleteTree = get_deleteTree(definiendum, statement_tree, statement_xs)
+    print("\ndeletedTree: " + str(deleteTree))
     return definiens_content_tree
-    cat_supposed = "" # get_Cat_of_String(shell, IN_string_supposed)
-    cat_actual = IN_tree_actual
-    if cat_supposed != cat_actual:
-        match cat_supposed, cat_actual:
-            case "N", "V":
-                string_actual = "" #TODO
-
-            #TODO: All the other cases...
-    else:
-        tree_actual = IN_tree_actual
-    return tree_actual
 
 def get_extendedVariables_tree(statement_tree):
     #TODO: Add Variable after Nouns, which are in relation to the definiendum
@@ -108,11 +141,12 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     statement_shtml = gfxml.parse_shtml(statement_htmlfile_path)
     #Simplify the tags (e.g. replace "<div shtml:sourceref="http://mathhub.info/smglom/algebra/mod/monoid.en.tex#367.15.1:380.15.14" class="rustex-VFil">" by "< 15 >")
     statement_xs, statement_string = gfxml.get_gfxml_string(statement_shtml)
+    print("\nstatement_xs: " + str(statement_xs))
     statement_sentences = gfxml.sentence_tokenize(statement_string)
     for s in statement_sentences:
-        print("s: " + str(s))
+        print("\ns: " + str(s))
         s_preprocessed = make_sentence_GfConform(s)
-        print("s_preprocessed: " + str(s_preprocessed))
+        print("\ns_preprocessed: " + str(s_preprocessed))
         gf_ast = shell.handle_command(f'p "{s_preprocessed}"')
         #print("gf_ast: " + str(gf_ast))
         all_statement_trees = []
@@ -121,19 +155,21 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
             statement_tree_temp = gfxml.build_tree(statement_xs, line)
             all_statement_trees.append(statement_tree_temp)
         statement_tree = all_statement_trees[0] #For now... TODO: Go through all trees. But which one to choose?
-        print("statement_tree: " + str(statement_tree))
+        print("\nstatement_tree: " + str(statement_tree))
+        print()
 
     ### DEFINITION ###
     #Parse the definition sentence
     definition_shtml = gfxml.parse_shtml(definition_htmlfile_path)
     #Simplify the tags (e.g. replace "<div shtml:sourceref="http://mathhub.info/smglom/algebra/mod/monoid.en.tex#367.15.1:380.15.14" class="rustex-VFil">" by "< 15 >")
     definition_xs, definition_string = gfxml.get_gfxml_string(definition_shtml)
+    print("\ndefinition_xs: " + str(definition_xs))
     definition_sentences = gfxml.sentence_tokenize(definition_string)
 
     for s in definition_sentences:
-        print("s: " + str(s))
+        print("\ns: " + str(s))
         s_preprocessed = make_sentence_GfConform(s)
-        print("s_preprocessed: " + str(s_preprocessed))
+        print("\ns_preprocessed: " + str(s_preprocessed))
         gf_ast = shell.handle_command(f'p "{s_preprocessed}"')
         #print("gf_ast: " + str(gf_ast))
         all_definition_trees = []
@@ -142,12 +178,12 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
             definition_tree_temp = gfxml.build_tree(definition_xs, line)
             all_definition_trees.append(definition_tree_temp)
         definition_tree = all_definition_trees[0] #For now... TODO: Go through all trees. But which one to choose?
-        print("definition_tree: " + str(definition_tree))
+        print("\ndefinition_tree: " + str(definition_tree))
 
     #Extract the definiens content out of the definition sentence
-    definiens_content_tree = get_definiensContent(definiendum, definition_tree, definition_xs)
+    definiens_content_tree = get_definiensContent(definiendum, definition_tree)
     if definiens_content_tree == None: print("ERROR: No definiens_content_tree found in the definition sentence.")
-    print("\n definiens_content_tree: " + str(definiens_content_tree))
+    print("\ndefiniens_content_tree: " + str(definiens_content_tree))
     ##############################################################################################################
 
 
@@ -168,7 +204,8 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     definiens_content_tree = get_alignedVariables_tree(statement_tree, assignedVariables) #TODO
 
     #Align the category of the definiens content to the category of the definiendum
-    merged_tree = get_alignedCategories_tree(statement_tree, definiens_content_tree, definiendum) #TODO
+    merged_tree = get_merged_tree(statement_tree, statement_xs, definiens_content_tree, definition_xs, definiendum) #TODO
+    print("\nmerged_tree: " + str(merged_tree))
     ##############################################################################################################
 
 
@@ -176,13 +213,14 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     ########## CREATE OUTPUT #####################################################################################
     #Linearize definiens content
     recovery_info, gf_input = merged_tree.to_gf()
-    print(gf_input)
+    print("\ngf_input: " + str(gf_input))
+    print("\nrecovery_info: " + str(recovery_info))
     gf_lin = shell.handle_command(f'linearize {gf_input}')
-    print(gf_lin)
+    print("\ngf_lin: " + str(gf_lin))
     merged_sentence = gfxml.final_recovery(gf_lin, recovery_info)
-    print(merged_sentence)
+    print("\nmerged_sentence: " + str(merged_sentence))
     final_sentence = postprocessSentence(merged_sentence)
-    print(final_sentence)
+    print("\nfinal_sentence: " + str(final_sentence))
     ##############################################################################################################
 
 
