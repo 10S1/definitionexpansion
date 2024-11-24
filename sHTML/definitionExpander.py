@@ -1,7 +1,5 @@
 ###----- Imports --------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 import json
-import random
-import string
 import regex as re
 import shutil
 from pathlib import Path
@@ -49,8 +47,18 @@ def postprocessSentence(sentence: str) -> str:
 def linearizeTree(shell: gf.GFShellRaw, tree) -> str:
     cmd_linearize = 'linearize ' + str(tree)
     linearizedTree = shell.handle_command(cmd_linearize)
-    #res_sentence = uppercase_first_letter(linearizedTree)
-    return linearizedTree #res_sentence
+    return linearizedTree
+
+def get_outerNode(tree, subtree):
+    if isinstance(tree, gfxml.G) or isinstance(tree, gfxml.X):
+        if subtree in tree.children:
+            return tree
+        else:
+            for child in tree.children:
+                outerTree = get_outerNode(child, subtree)
+                if outerTree is not None:
+                    return outerTree
+    return None
 
 def get_definiensContent(definiendum, tree):
     if isinstance(tree, gfxml.X) and tree.tag == 'span':
@@ -69,7 +77,6 @@ def get_definiensContent(definiendum, tree):
                 return definiensContent_tree
             
     return None
-
 
 def get_deleteTree(definiendum, tree):
     if isinstance(tree, gfxml.X) and tree.tag == 'span':
@@ -118,13 +125,13 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     statement_shtml = gfxml.parse_shtml(statement_htmlfile_path)
     #Simplify the tags (e.g. replace "<div shtml:sourceref="http://mathhub.info/smglom/algebra/mod/monoid.en.tex#367.15.1:380.15.14" class="rustex-VFil">" by "< 15 >")
     statement_xs, statement_string = gfxml.get_gfxml_string(statement_shtml)
-    print("\nstatement_xs: " + str(statement_xs))
+    #print("\nstatement_xs: " + str(statement_xs))
     statement_sentences = gfxml.sentence_tokenize(statement_string)
     for s in statement_sentences:
-        print("\ns: " + str(s))
-        s_preprocessed = make_sentence_GfConform(s)
-        print("\ns_preprocessed: " + str(s_preprocessed))
-        gf_ast = shell.handle_command(f'p "{s_preprocessed}"')
+        #print("\ns: " + str(s))
+        statement_sentence_preprocessed = make_sentence_GfConform(s)
+        print("\nstatement_sentence_preprocessed: " + str(statement_sentence_preprocessed))
+        gf_ast = shell.handle_command(f'p "{statement_sentence_preprocessed}"')
         #print("gf_ast: " + str(gf_ast))
         all_statement_trees = []
         for line in gf_ast.splitlines():
@@ -140,14 +147,14 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     definition_shtml = gfxml.parse_shtml(definition_htmlfile_path)
     #Simplify the tags (e.g. replace "<div shtml:sourceref="http://mathhub.info/smglom/algebra/mod/monoid.en.tex#367.15.1:380.15.14" class="rustex-VFil">" by "< 15 >")
     definition_xs, definition_string = gfxml.get_gfxml_string(definition_shtml)
-    print("\ndefinition_xs: " + str(definition_xs))
+    #print("\ndefinition_xs: " + str(definition_xs))
     definition_sentences = gfxml.sentence_tokenize(definition_string)
 
     for s in definition_sentences:
-        print("\ns: " + str(s))
-        s_preprocessed = make_sentence_GfConform(s)
-        print("\ns_preprocessed: " + str(s_preprocessed))
-        gf_ast = shell.handle_command(f'p "{s_preprocessed}"')
+        #print("\ns: " + str(s))
+        definition_sentence_preprocessed = make_sentence_GfConform(s)
+        print("\ndefinition_sentence_preprocessed: " + str(definition_sentence_preprocessed))
+        gf_ast = shell.handle_command(f'p "{definition_sentence_preprocessed}"')
         #print("gf_ast: " + str(gf_ast))
         all_definition_trees = []
         for line in gf_ast.splitlines():
@@ -191,11 +198,11 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     #Linearize definiens content
     recovery_info, gf_input = merged_tree.to_gf()
     print("\ngf_input: " + str(gf_input))
-    print("\nrecovery_info: " + str(recovery_info))
+    #print("\nrecovery_info: " + str(recovery_info))
     gf_lin = shell.handle_command(f'linearize {gf_input}')
     print("\ngf_lin: " + str(gf_lin))
     merged_sentence = gfxml.final_recovery(gf_lin, recovery_info)
-    print("\nmerged_sentence: " + str(merged_sentence))
+    #print("\nmerged_sentence: " + str(merged_sentence))
     final_sentence = postprocessSentence(merged_sentence)
     print("\nfinal_sentence: " + str(final_sentence))
     ##############################################################################################################
