@@ -60,6 +60,18 @@ def get_outerNode(tree, subtree):
                     return outerTree
     return None
 
+def replaceNode(tree, removeNode, addNode):
+    if tree == removeNode:
+        return addNode
+    elif isinstance(tree, gfxml.X) or isinstance(tree, gfxml.G):
+        new_children = []
+        for child in tree.children:
+            new_children.append(replaceNode(child, removeNode, addNode))
+        tree.children = new_children
+        return tree
+    else:
+        return tree
+
 def get_definiensContent(definiendum, tree):
     if isinstance(tree, gfxml.X) and tree.tag == 'span':
         attrs = tree.attrs
@@ -101,15 +113,35 @@ def rename_vars(definiens_content_tree, statement_tree):
     return definiens_content_tree
 
 def get_merged_tree(statement_tree, definiens_content_tree, definiendum):
-    deleteTree = get_deleteTree(definiendum, statement_tree)
-    print("\ndeletedTree: " + str(deleteTree))
-    return definiens_content_tree
+    merged_tree = statement_tree
+
+    actual_definiens_content_tree = definiens_content_tree.children[0].children[0]
+    print("\nactual_definiens_content_tree: " + str(actual_definiens_content_tree))
+    delete_tree = get_deleteTree(definiendum, statement_tree)
+    print("\ndelete_tree: " + str(delete_tree))
+
+    if isinstance(delete_tree, gfxml.X) and isinstance(definiens_content_tree, gfxml.X):
+        print("delete_tree.wrapfun: " + str(delete_tree.wrapfun))
+        print("definiens_content_tree.wrapfun: " + str(definiens_content_tree.wrapfun))
+
+        #Same category
+        if (delete_tree.wrapfun == definiens_content_tree.wrapfun):
+            merged_tree = statement_tree.replace(delete_tree, actual_definiens_content_tree)
+        
+        elif (delete_tree.wrapfun == "WRAP_A") and (definiens_content_tree.wrapfun == "WRAP_Cl"):
+            delete_tree_temp = get_outerNode(statement_tree, get_outerNode(statement_tree, get_outerNode(statement_tree, get_outerNode(statement_tree, delete_tree))))
+            print("\ndelete_tree_temp: " + str(delete_tree_temp))
+            if isinstance(delete_tree_temp, gfxml.G) and (delete_tree_temp.node == actual_definiens_content_tree.node):
+                merged_tree = replaceNode(statement_tree, delete_tree_temp, actual_definiens_content_tree)
+
+    return merged_tree
 
 def get_extendedVariables_tree(statement_tree):
     #TODO: Add Variable after Nouns, which are in relation to the definiendum
     return statement_tree
 
-def get_alignedVariables_tree(definition_tree, assignedVariables):
+def get_alignedVariables_tree(definiens_content_tree, definition_tree, assignedVariables):
+    return definiens_content_tree
     #TODO: Replace variables/tags through their assigned variables/tags
     return definition_tree
 
@@ -140,7 +172,6 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
             all_statement_trees.append(statement_tree_temp)
         statement_tree = all_statement_trees[0] #For now... TODO: Go through all trees. But which one to choose?
         print("\nstatement_tree: " + str(statement_tree))
-        print()
 
     ### DEFINITION ###
     #Parse the definition sentence
@@ -185,7 +216,7 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
             statement_tree = statement_tree_extendedVariables
 
     #Modify definiens content tree 
-    definiens_content_tree = get_alignedVariables_tree(statement_tree, assignedVariables) #TODO
+    definiens_content_tree = get_alignedVariables_tree(definiens_content_tree, statement_tree, assignedVariables) #TODO
 
     #Align the category of the definiens content to the category of the definiendum
     merged_tree = get_merged_tree(statement_tree, definiens_content_tree, definiendum) #TODO
