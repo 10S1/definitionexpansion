@@ -131,8 +131,9 @@ def get_merged_tree(statement_tree, definiens_content_tree, definiendum):
         elif (delete_tree.wrapfun == "WRAP_A") and (definiens_content_tree.wrapfun == "WRAP_Cl"):
             delete_tree_temp = get_outerNode(statement_tree, get_outerNode(statement_tree, get_outerNode(statement_tree, get_outerNode(statement_tree, delete_tree))))
             print("\ndelete_tree_temp: " + str(delete_tree_temp))
-            if isinstance(delete_tree_temp, gfxml.G) and (delete_tree_temp.node == actual_definiens_content_tree.node):
-                merged_tree = replaceNode(statement_tree, delete_tree_temp, actual_definiens_content_tree)
+            match delete_tree_temp:
+                case gfxml.G('PredVP', [np, gfxml.G('UseComp', [gfxml.G('CompAP', [gfxml.G('PositA', delete_tree)])])]) if actual_definiens_content_tree.node == "PredVP":
+                        merged_tree = replaceNode(statement_tree, delete_tree_temp, actual_definiens_content_tree)
 
     return merged_tree
 
