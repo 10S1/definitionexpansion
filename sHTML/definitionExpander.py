@@ -113,27 +113,37 @@ def rename_vars(definiens_content_tree, statement_tree):
     return definiens_content_tree
 
 def get_merged_tree(statement_tree, definiens_content_tree, definiendum):
-    merged_tree = statement_tree
-
-    actual_definiens_content_tree = definiens_content_tree.children[0].children[0]
-    print("\nactual_definiens_content_tree: " + str(actual_definiens_content_tree))
+    merged_tree = None
+    #Get actual definiens content tree (= definiens content tree without wrapper)
+    ADC_tree = definiens_content_tree.children[0].children[0]
+    print("\nADC_tree: " + str(ADC_tree))
+    #Get the subtree from the statement tree, which needs to be removed (= the reference to the definiendum)
     delete_tree = get_deleteTree(definiendum, statement_tree)
     print("\ndelete_tree: " + str(delete_tree))
 
+    #Replace the delete_tree by the ADC_tree. Modifications necessary, if categories do not align.
     if isinstance(delete_tree, gfxml.X) and isinstance(definiens_content_tree, gfxml.X):
         print("delete_tree.wrapfun: " + str(delete_tree.wrapfun))
         print("definiens_content_tree.wrapfun: " + str(definiens_content_tree.wrapfun))
 
         #Same category
-        if (delete_tree.wrapfun == definiens_content_tree.wrapfun):
-            merged_tree = statement_tree.replace(delete_tree, actual_definiens_content_tree)
+        #if (delete_tree.wrapfun == definiens_content_tree.wrapfun): #Stimmt das überhaupt?
+        #    merged_tree = statement_tree.replace(delete_tree, ADC_tree)
         
-        elif (delete_tree.wrapfun == "WRAP_A") and (definiens_content_tree.wrapfun == "WRAP_Cl"):
+        if (delete_tree.wrapfun == "WRAP_A") and (ADC_tree.node == "PredVP"):
+            # "is" <adjective which is the definiendum>     =>     <definiens content>
             delete_tree_temp = get_outerNode(statement_tree, get_outerNode(statement_tree, get_outerNode(statement_tree, get_outerNode(statement_tree, delete_tree))))
-            print("\ndelete_tree_temp: " + str(delete_tree_temp))
             match delete_tree_temp:
-                case gfxml.G('PredVP', [np, gfxml.G('UseComp', [gfxml.G('CompAP', [gfxml.G('PositA', delete_tree)])])]) if actual_definiens_content_tree.node == "PredVP":
-                        merged_tree = replaceNode(statement_tree, delete_tree_temp, actual_definiens_content_tree)
+                case gfxml.G('PredVP', [np, gfxml.G('UseComp', [gfxml.G('CompAP', [gfxml.G('PositA', delete_tree)])])]):
+                    merged_tree = replaceNode(statement_tree, delete_tree_temp, ADC_tree)
+        
+        elif (delete_tree.wrapfun == "WRAP_A") and (ADC_tree.node == "formula_NP"):
+            # <adjective which is the definiendum> <noun>     =>     <noun> "such that" <definiens content>
+            delete_tree_temp = get_outerNode(statement_tree, get_outerNode(statement_tree, get_outerNode(statement_tree, delete_tree)))
+            match delete_tree_temp:
+                case gfxml.G('DetCN', [R_DetQuant, gfxml.G('AdjCN', [gfxml.G('PositA', deletedTree), R_Noun])]):
+                    new_tree = gfxml.G('DetCN', [R_DetQuant, gfxml.G('ApposCN', [gfxml.G('ApposCN', [gfxml.G('AdvCN', [R_Noun, gfxml.G('such_Adv', [])]), gfxml.G('DetNP', [gfxml.G('DetQuant', [gfxml.G('that_Quant', []), gfxml.G('NumSg')])])]), ADC_tree])])
+                    merged_tree = replaceNode(statement_tree, delete_tree_temp, new_tree)
 
     return merged_tree
 
@@ -246,7 +256,7 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
 
 
 
-def testE001(example_name):
+def testExample(example_name):
     with open("sHTML\Examples\examples.json", 'r') as file:
         examples = json.load(file)
     example = examples[example_name]
@@ -255,4 +265,4 @@ def testE001(example_name):
     definiendum = example["definiendum"]
     main(statement_htmlfile_path, definition_htmlfile_path, definiendum)
 
-testE001("E001")
+testExample("E002")

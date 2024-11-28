@@ -8,8 +8,18 @@
     },
 
     "E002": {
-        "statement": "definitionexpansion\\sHTML\\Examples\\ring.en.xhtml",
-        "definition": "definitionexpansion\\sHTML\\Examples\\monoid.en.xhtml",
-        "definiendum": "monoid"
+        "statement": "sHTML/Examples/positive_statement.xhtml",
+        "definition": "sHTML/Examples/positive_def.xhtml",
+        "definiendum": "http://example.org/arith?positive",
+        "output" : " Let <math><mi>m</mi></math> be a <span data-symref=\"http://example.org/arith?integer\">integer</span> such that <math><mrow><mi>m</mi><mo>&gt;</mo><mn>0</mn></mrow></math>.",
+        "IEoutput" : "Let <math><mi>m</mi></math> be a <span data-symref=\"http://example.org/arith?positive\">positive</span> <span data-symref=\"http://example.org/arith?integer\">integer</span> (i.e. <math><mrow><mi>m</mi><mo>&gt;</mo><mn>0</mn></mrow></math>)."
+    },
+     
+    "E003": {
+        "statement": "sHTML/Examples/zfc_thm.xhtml",
+        "definition": "sHTML/Examples/empty.en.xhtml",
+        "definiendum": "http://example.org/logic?consistent",
+        "output" : "If it is wrong that <math><mrow><mi>T</mi><mo>⊢</mo><mi>⊥</mi></mrow></math>, then <span data-symref=\"http://example.org/foundations?ZFC\">ZFC</span> has a <span data-symref=\"http://example.org/discmath?countable\">countable</span> <span data-symref=\"http://example.org/logic?model\">model</span>.",
+        "IEoutput" : "If <span data-symref=\"http://example.org/foundations?ZFC\">ZFC</span> is <span data-symref=\"http://example.org/logic?consistent\">consistent</span> (i.e. it is wrong that <math><mrow><mi>T</mi><mo>⊢</mo><mi>⊥</mi></mrow></math>), then <span data-symref=\"http://example.org/foundations?ZFC\">ZFC</span> has a <span data-symref=\"http://example.org/discmath?countable\">countable</span> <span data-symref=\"http://example.org/logic?model\">model</span>."
     }
 }
