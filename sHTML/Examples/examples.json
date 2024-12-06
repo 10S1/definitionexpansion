@@ -20,6 +20,7 @@
         "definition": "sHTML/Examples/empty.en.xhtml",
         "definiendum": "http://example.org/logic?consistent",
         "output" : "If it is wrong that <math><mrow><mi>T</mi><mo>⊢</mo><mi>⊥</mi></mrow></math>, then <span data-symref=\"http://example.org/foundations?ZFC\">ZFC</span> has a <span data-symref=\"http://example.org/discmath?countable\">countable</span> <span data-symref=\"http://example.org/logic?model\">model</span>.",
-        "IEoutput" : "If <span data-symref=\"http://example.org/foundations?ZFC\">ZFC</span> is <span data-symref=\"http://example.org/logic?consistent\">consistent</span> (i.e. it is wrong that <math><mrow><mi>T</mi><mo>⊢</mo><mi>⊥</mi></mrow></math>), then <span data-symref=\"http://example.org/foundations?ZFC\">ZFC</span> has a <span data-symref=\"http://example.org/discmath?countable\">countable</span> <span data-symref=\"http://example.org/logic?model\">model</span>."
+        "IEoutput" : "If <span data-symref=\"http://example.org/foundations?ZFC\">ZFC</span> is <span data-symref=\"http://example.org/logic?consistent\">consistent</span> (i.e. it is wrong that <math><mrow><mi>T</mi><mo>⊢</mo><mi>⊥</mi></mrow></math>), then <span data-symref=\"http://example.org/foundations?ZFC\">ZFC</span> has a <span data-symref=\"http://example.org/discmath?countable\">countable</span> <span data-symref=\"http://example.org/logic?model\">model</span>.",
+        "comment" : "Runtime is too long. (Stopped after 10 minutes.) Parsing possibilities were listed after a few minutes when executing in GF directly. Code somehow takes way longer."
     }
 }

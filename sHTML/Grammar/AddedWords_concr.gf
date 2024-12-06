@@ -15,5 +15,6 @@ concrete AddedWords_concr of AddedWords_abstr = GrammarEng, MathTermsEng, Morpho
         have_VV = mkVV IrregEng.have_V;
         choose_V2 = mkV2 (IrregEng.choose_V);
         take_V2 = mkV2 (IrregEng.take_V);
+        ZFC_N = mkN "ZFC";
         
 }
