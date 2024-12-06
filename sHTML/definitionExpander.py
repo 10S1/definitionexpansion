@@ -151,10 +151,12 @@ def get_extendedVariables_tree(statement_tree):
     #TODO: Add Variable after Nouns, which are in relation to the definiendum
     return statement_tree
 
-def get_alignedVariables_tree(definiens_content_tree, definition_tree, assignedVariables):
+def get_alignedVariables_tree(definiens_content_tree, assignedVariables):
+    for variable in assignedVariables:
+        node = ""
+        node_new = node.replace(variable, assignedVariables[variable])
     return definiens_content_tree
     #TODO: Replace variables/tags through their assigned variables/tags
-    return definition_tree
 
 def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendum: str):
     #Initialize GF shell
@@ -222,12 +224,13 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     #Assign variables and introduce variables in statement tree (if necessary)
     statement_tree_extendedVariables = get_extendedVariables_tree(statement_tree) #TODO
     assignedVariables = variableAssigner.get_assignedVariables(statement_tree_extendedVariables, definition_tree, definiens_content_tree) #TODO
-    for var in assignedVariables:
-        if var["replacedVar"] not in definiens_content_tree:
-            statement_tree = statement_tree_extendedVariables
+    #for var in assignedVariables: TODO
+    #    if assignedVariables[var] not in statement_tree:
+    #        statement_tree = statement_tree_extendedVariables
+    print("\nassignedVariables: " + str(assignedVariables))
 
     #Modify definiens content tree 
-    definiens_content_tree = get_alignedVariables_tree(definiens_content_tree, statement_tree, assignedVariables) #TODO
+    definiens_content_tree = get_alignedVariables_tree(definiens_content_tree, assignedVariables) #TODO
 
     #Align the category of the definiens content to the category of the definiendum
     merged_tree = get_merged_tree(statement_tree, definiens_content_tree, definiendum) #TODO

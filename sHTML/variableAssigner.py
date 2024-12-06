@@ -44,7 +44,7 @@ def transform_string(input_string):
 def tree_to_sentence(shell, tree):
     recovery_info, gf_input = tree.to_gf()
     #print("\ngf_input: " + str(gf_input))
-    #print("\nrecovery_info: " + str(recovery_info))
+    print("\nrecovery_info: " + str(recovery_info))
     gf_lin = shell.handle_command(f'linearize {gf_input}')
     #print("\ngf_lin: " + str(gf_lin)
     return gf_lin, recovery_info
@@ -70,13 +70,13 @@ def get_sentences(statement_tree, definition_tree, definiensContent_tree):
     for i in range(0, len(statement_recovery)):
         name = "formula_" + str(i)
         if name in statement_sntc:
-            statement_formulas[name] = statement_recovery[i]
+            statement_formulas[name] = statement_recovery[i][0] + statement_recovery[i][1]
     
     definition_formulas = {}
     for i in range(0, len(definition_recovery)):
         name = "formula_" + str(i)
         if name in definition_sntc:
-            definition_formulas[name] = definition_recovery[i]
+            definition_formulas[name] = definition_recovery[i][0] + definition_recovery[i][1]
 
     definiensContent_formulas = {}
     for i in range(0, len(definiensContent_recovery)):
@@ -210,4 +210,4 @@ def test():
     get_assignedVariables(statement_tree, definition_tree, definiensContent_tree)
 
 
-test()
+#test()
