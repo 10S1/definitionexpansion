@@ -55,7 +55,7 @@ class X(Node):
             return f'({self.wrapfun} (tag {tag_num}) {" ".join(child._to_gf(_tags) for child in self.children)})'
 
 class XT(Node):
-    __match_args__ = ('text')
+    __match_args__ = ('text',)
 
     def __init__(self, text: str):
         self.text = text
@@ -298,6 +298,30 @@ def final_recovery(string: str, recovery_info: list[tuple[str, str]]) -> str:
             string = string.replace(f'< {i} >', open_tag)
             string = string.replace(f'</ {i} >', close_tag)
     return string
+
+
+def tree_eq(a: Node, b: Node) -> bool:
+    match (a, b):
+        case (X(t1, c1, _, f1), X(t2, c2, _, f2)):
+            return t1 == t2 and f1 == f2 and len(c1) == len(c2) and all(tree_eq(aa, bb) for aa, bb in zip(c1, c2))
+        case (G(f1, c1), G(f2, c2)):
+            return f1 == f2 and len(c1) == len(c2) and all(tree_eq(aa, bb) for aa, bb in zip(c1, c2))
+        case (XT(t1), XT(t2)):
+            return t1 == t2
+        case _:
+            return False
+
+
+def tree_subst(t: Node, a: Node, b: Node) -> Node:
+    """ replaces all occurrences of a in t with b (ignoring attributes) """
+    if tree_eq(t, a):
+        return deepcopy(b)
+    t = deepcopy(t)
+    if isinstance(t, G) or isinstance(t, X):
+        for i in range(len(t.children)):
+            t.children[i] = tree_subst(t.children[i], a, b)
+    return t
+
 
 
 def test():
