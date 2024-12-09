@@ -112,6 +112,11 @@ def match_formulas_by_context(statement_formulas, definition_formulas):
         matches[stmt_formula["text"]] = best_match["text"] if best_match else None
     return matches
 
+def strip_outer_math_tags(html_string):
+    # Regex, um äußere <math> Tags zu entfernen und nur den Inhalt zu behalten
+    result = re.sub(r'<math\s*>\s*(.*?)\s*</math>', r'\1', html_string)
+    return result
+
 def get_assignedVariables(statement_tree, definition_tree, definiensContent_tree):
     
     statement_sntc, definition_sntc, definiensContent_sntc, statement_formulas, definition_formulas, definiensContent_formulas = get_sentences(statement_tree, definition_tree, definiensContent_tree)
@@ -161,7 +166,7 @@ def get_assignedVariables(statement_tree, definition_tree, definiensContent_tree
     definition_dependencies_formulas = [dep for dep in definition_dependencies if re.match(r"formula_\d+", dep["text"])]
 
     #For debugging
-    #""" 
+    """ 
     # print("\nstatement_tree: " + str(statement_tree))
     # print("\ndefinition_tree: " + str(definition_tree))
     # print("\ndefiniensContent_tree: " + str(definiensContent_tree))
@@ -179,7 +184,7 @@ def get_assignedVariables(statement_tree, definition_tree, definiensContent_tree
 
     #print("\nstatement_dependencies_formulas: " + str(statement_dependencies_formulas))
     #print("\ndefinition_dependencies_formulas: " + str(definition_dependencies_formulas)) 
-    #"""
+    """
 
     statement_doc_html = displacy.render(statement_doc, style='dep', page=True)
     with open('dependency_statement.html', 'w', encoding='utf-8') as file:
@@ -194,8 +199,8 @@ def get_assignedVariables(statement_tree, definition_tree, definiensContent_tree
 
     aligned_variables = {}
     for formula in aligned_formulas:
-        var_statement = statement_formulas[formula]
-        var_definition = definition_formulas[aligned_formulas[formula]]
+        var_statement = strip_outer_math_tags(statement_formulas[formula])
+        var_definition = strip_outer_math_tags(definition_formulas[aligned_formulas[formula]])
         aligned_variables[var_definition] = var_statement
     #print("\naligned_variables: " + str(aligned_variables))
 

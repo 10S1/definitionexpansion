@@ -152,7 +152,7 @@ def get_alignedVariables_tree(definiens_content_tree, assignedVariables):
     for variable in assignedVariables:
         replaced_node = gfxml.xify(variable)
         replacement_node = gfxml.xify(assignedVariables[variable])
-        gfxml.tree_subst(definiens_content_tree, replaced_node, replacement_node)
+        definiens_content_tree = gfxml.tree_subst(definiens_content_tree, replaced_node, replacement_node)
         print("\nreplaced_node: " + str(replaced_node))
         print("\nreplacement_node: " + str(replacement_node))
     return definiens_content_tree
