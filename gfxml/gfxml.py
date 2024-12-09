@@ -102,25 +102,28 @@ def parse_shtml(path: Path) -> etree._ElementTree:
                 )
 
 
+def xify(node: etree._Element | str) -> X:
+    if isinstance(node, str):
+        node = etree.parse(StringIO(node)).getroot()
+    x = X(
+        tag=node.tag,
+        children=[],
+        attrs=node.attrib
+    )
+    if node.text and node.text.strip():
+        x.children.append(XT(node.text))
+    for child in node:
+        x.children.append(xify(child))
+        if child.tail and child.tail.strip():
+            x.children.append(XT(child.tail))
+    return x
+
+
+
 def get_gfxml_string(shtml: etree._ElementTree) -> tuple[list[X], str]:
     strings: list[str] = []
 
     nodes: list[X] = []
-
-    def xify(node: etree._Element) -> X:
-        x = X(
-            tag=node.tag,
-            children=[],
-            attrs=node.attrib
-        )
-        if node.text and node.text.strip():
-            x.children.append(XT(node.text))
-        for child in node:
-            x.children.append(xify(child))
-            if child.tail and child.tail.strip():
-                x.children.append(XT(child.tail))
-        return x
-
 
     def _recurse(node: etree._Element):
         tag_num = len(nodes)
