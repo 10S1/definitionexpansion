@@ -60,17 +60,14 @@ def get_outerNode(tree, subtree):
                     return outerTree
     return None
 
-def replaceNode(tree, removeNode, addNode):
-    if tree == removeNode:
-        return addNode
-    elif isinstance(tree, gfxml.X) or isinstance(tree, gfxml.G):
-        new_children = []
+def node_is_in_tree(tree, node):
+    if tree == node:
+        return True
+    if isinstance(tree, gfxml.G) or isinstance(tree, gfxml.X):
         for child in tree.children:
-            new_children.append(replaceNode(child, removeNode, addNode))
-        tree.children = new_children
-        return tree
-    else:
-        return tree
+            if node_is_in_tree(child, node):
+                return True
+    return False
 
 def get_definiensContent(definiendum, tree):
     if isinstance(tree, gfxml.X) and tree.tag == 'span':
@@ -135,7 +132,7 @@ def get_merged_tree(statement_tree, definiens_content_tree, definiendum):
             delete_tree_temp = get_outerNode(statement_tree, get_outerNode(statement_tree, get_outerNode(statement_tree, get_outerNode(statement_tree, delete_tree))))
             match delete_tree_temp:
                 case gfxml.G('PredVP', [np, gfxml.G('UseComp', [gfxml.G('CompAP', [gfxml.G('PositA', delete_tree)])])]):
-                    merged_tree = replaceNode(statement_tree, delete_tree_temp, ADC_tree)
+                    merged_tree = gfxml.tree_subst(statement_tree, delete_tree_temp, ADC_tree)
         
         elif (delete_tree.wrapfun == "WRAP_A") and (ADC_tree.node == "formula_NP"):
             # <adjective which is the definiendum> <noun>     =>     <noun> "such that" <definiens content>
@@ -143,7 +140,7 @@ def get_merged_tree(statement_tree, definiens_content_tree, definiendum):
             match delete_tree_temp:
                 case gfxml.G('DetCN', [R_DetQuant, gfxml.G('AdjCN', [gfxml.G('PositA', deletedTree), R_Noun])]):
                     new_tree = gfxml.G('DetCN', [R_DetQuant, gfxml.G('ApposCN', [gfxml.G('ApposCN', [gfxml.G('AdvCN', [R_Noun, gfxml.G('such_Adv', [])]), gfxml.G('DetNP', [gfxml.G('DetQuant', [gfxml.G('that_Quant', []), gfxml.G('NumSg')])])]), ADC_tree])])
-                    merged_tree = replaceNode(statement_tree, delete_tree_temp, new_tree)
+                    merged_tree = gfxml.tree_subst(statement_tree, delete_tree_temp, new_tree)
 
     return merged_tree
 
@@ -153,10 +150,12 @@ def get_extendedVariables_tree(statement_tree):
 
 def get_alignedVariables_tree(definiens_content_tree, assignedVariables):
     for variable in assignedVariables:
-        node = ""
-        node_new = node.replace(variable, assignedVariables[variable])
+        replaced_node = gfxml.xify(variable)
+        replacement_node = gfxml.xify(assignedVariables[variable])
+        gfxml.tree_subst(definiens_content_tree, replaced_node, replacement_node)
+        print("\nreplaced_node: " + str(replaced_node))
+        print("\nreplacement_node: " + str(replacement_node))
     return definiens_content_tree
-    #TODO: Replace variables/tags through their assigned variables/tags
 
 def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendum: str):
     #Initialize GF shell
@@ -224,10 +223,10 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     #Assign variables and introduce variables in statement tree (if necessary)
     statement_tree_extendedVariables = get_extendedVariables_tree(statement_tree) #TODO
     assignedVariables = variableAssigner.get_assignedVariables(statement_tree_extendedVariables, definition_tree, definiens_content_tree) #TODO
-    #for var in assignedVariables: TODO
-    #    if assignedVariables[var] not in statement_tree:
-    #        statement_tree = statement_tree_extendedVariables
     print("\nassignedVariables: " + str(assignedVariables))
+    for variable in assignedVariables:
+        if not node_is_in_tree(statement_tree, gfxml.xify(assignedVariables[variable])):
+            statement_tree = statement_tree_extendedVariables
 
     #Modify definiens content tree 
     definiens_content_tree = get_alignedVariables_tree(definiens_content_tree, assignedVariables) #TODO

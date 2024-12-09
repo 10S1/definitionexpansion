@@ -161,6 +161,7 @@ def get_assignedVariables(statement_tree, definition_tree, definiensContent_tree
     definition_dependencies_formulas = [dep for dep in definition_dependencies if re.match(r"formula_\d+", dep["text"])]
 
     #For debugging
+    #""" 
     # print("\nstatement_tree: " + str(statement_tree))
     # print("\ndefinition_tree: " + str(definition_tree))
     # print("\ndefiniensContent_tree: " + str(definiensContent_tree))
@@ -173,11 +174,12 @@ def get_assignedVariables(statement_tree, definition_tree, definiensContent_tree
     print("\ndefinition_formulas: " + str(definition_formulas))
     print("\ndefiniensContent_formulas: " + str(definiensContent_formulas))
 
-    print("\nstatement_dependencies: " + str(statement_dependencies))
-    print("\ndefinition_dependencies: " + str(definition_dependencies))
+    #print("\nstatement_dependencies: " + str(statement_dependencies))
+    #print("\ndefinition_dependencies: " + str(definition_dependencies))
 
-    print("\nstatement_dependencies_formulas: " + str(statement_dependencies_formulas))
-    print("\ndefinition_dependencies_formulas: " + str(definition_dependencies_formulas))
+    #print("\nstatement_dependencies_formulas: " + str(statement_dependencies_formulas))
+    #print("\ndefinition_dependencies_formulas: " + str(definition_dependencies_formulas)) 
+    #"""
 
     statement_doc_html = displacy.render(statement_doc, style='dep', page=True)
     with open('dependency_statement.html', 'w', encoding='utf-8') as file:
@@ -188,14 +190,14 @@ def get_assignedVariables(statement_tree, definition_tree, definiensContent_tree
 
     ###
     aligned_formulas = match_formulas_by_context(statement_dependencies_formulas, definition_dependencies_formulas) 
-    print("\naligned_formulas: " + str(aligned_formulas))
+    #print("\naligned_formulas: " + str(aligned_formulas))
 
     aligned_variables = {}
     for formula in aligned_formulas:
         var_statement = statement_formulas[formula]
         var_definition = definition_formulas[aligned_formulas[formula]]
         aligned_variables[var_definition] = var_statement
-    print("\naligned_variables: " + str(aligned_variables))
+    #print("\naligned_variables: " + str(aligned_variables))
 
     return aligned_variables
 ###------------------------------------------------------------------------------------------------------------------------------------------------------###
