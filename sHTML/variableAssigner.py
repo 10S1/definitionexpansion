@@ -70,13 +70,13 @@ def get_sentences(statement_tree, definition_tree, definiensContent_tree):
     for i in range(0, len(statement_recovery)):
         name = "formula_" + str(i)
         if name in statement_sntc:
-            statement_formulas[name] = statement_recovery[i][0] + statement_recovery[i][1]
+            statement_formulas[name] = strip_outer_math_tags(statement_recovery[i][0] + statement_recovery[i][1])
     
     definition_formulas = {}
     for i in range(0, len(definition_recovery)):
         name = "formula_" + str(i)
         if name in definition_sntc:
-            definition_formulas[name] = definition_recovery[i][0] + definition_recovery[i][1]
+            definition_formulas[name] = strip_outer_math_tags(definition_recovery[i][0] + definition_recovery[i][1])
 
     definiensContent_formulas = {}
     for i in range(0, len(definiensContent_recovery)):
@@ -86,7 +86,7 @@ def get_sentences(statement_tree, definition_tree, definiensContent_tree):
 
     return statement_sntc, definition_sntc, definiensContent_sntc, statement_formulas, definition_formulas, definiensContent_formulas
 
-def match_formulas_by_context(statement_formulas, definition_formulas):
+def match_formulas_by_context(statement_formulas, definition_formulas, DCT_formulas):
     """Matches formulas based on dependency roles and context."""
     matches = {}
     for stmt_formula in statement_formulas:
@@ -95,26 +95,41 @@ def match_formulas_by_context(statement_formulas, definition_formulas):
 
         for def_formula in definition_formulas:
             score = 0
+            
+            # Match dependency roles
+            role_weights = {
+                "nsubj": 3,    # Strong match for subjects
+                "attr": 2,     # Attribute match
+                "amod": 1,     # Adjective modifier match
+                "obj": 1,      # Object match
+            }
+
             if stmt_formula["dependency"] == def_formula["dependency"]:
-                score += 2
+                score += role_weights.get(stmt_formula["dependency"], 0)
+            
+            # Match heads
             if stmt_formula["head"] == def_formula["head"]:
                 score += 3
-            # Compare subtree overlap
-            stmt_subtree = set(stmt_formula["subtree"])
-            def_subtree = set(def_formula["subtree"])
-            score += len(stmt_subtree.intersection(def_subtree))
-            
-            # Update the best match
+
+            # Match attributes/modifiers (e.g., adjectives)
+            stmt_modifiers = set(stmt_formula.get("children", []))
+            def_modifiers = set(def_formula.get("children", []))
+            score += len(stmt_modifiers.intersection(def_modifiers))
+
+
+            # Update the best match if this score is higher
             if score > highest_score:
                 highest_score = score
                 best_match = def_formula
 
+        # Assign the best match
         matches[stmt_formula["text"]] = best_match["text"] if best_match else None
     return matches
 
 def strip_outer_math_tags(html_string):
     # Regex, um äußere <math> Tags zu entfernen und nur den Inhalt zu behalten
     result = re.sub(r'<math\s*>\s*(.*?)\s*</math>', r'\1', html_string)
+    result = re.sub(r'<mrow\s*>\s*(.*?)\s*</mrow>', r'\1', result)
     return result
 
 def get_assignedVariables(statement_tree, definition_tree, definiensContent_tree):
@@ -194,15 +209,15 @@ def get_assignedVariables(statement_tree, definition_tree, definiensContent_tree
         file.write(definition_doc_html)
 
     ###
-    aligned_formulas = match_formulas_by_context(statement_dependencies_formulas, definition_dependencies_formulas) 
-    #print("\naligned_formulas: " + str(aligned_formulas))
+    aligned_formulas = match_formulas_by_context(statement_dependencies_formulas, definition_dependencies_formulas, definiensContent_formulas) 
+    print("\naligned_formulas: " + str(aligned_formulas))
 
     aligned_variables = {}
     for formula in aligned_formulas:
-        var_statement = strip_outer_math_tags(statement_formulas[formula])
-        var_definition = strip_outer_math_tags(definition_formulas[aligned_formulas[formula]])
+        var_statement = statement_formulas[formula]
+        var_definition = definition_formulas[aligned_formulas[formula]]
         aligned_variables[var_definition] = var_statement
-    #print("\naligned_variables: " + str(aligned_variables))
+    print("\naligned_variables: " + str(aligned_variables))
 
     return aligned_variables
 ###------------------------------------------------------------------------------------------------------------------------------------------------------###
@@ -217,4 +232,6 @@ def test():
     get_assignedVariables(statement_tree, definition_tree, definiensContent_tree)
 
 
-#test()
+test()
+#TODO: Match definition formula only, if it is not part of the definiens content subtree
+#TODO: Improve score function
