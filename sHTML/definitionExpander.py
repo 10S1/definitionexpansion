@@ -49,26 +49,6 @@ def linearizeTree(shell: gf.GFShellRaw, tree) -> str:
     linearizedTree = shell.handle_command(cmd_linearize)
     return linearizedTree
 
-def get_outerNode(tree, subtree):
-    if isinstance(tree, gfxml.G) or isinstance(tree, gfxml.X):
-        if subtree in tree.children:
-            return tree
-        else:
-            for child in tree.children:
-                outerTree = get_outerNode(child, subtree)
-                if outerTree is not None:
-                    return outerTree
-    return None
-
-def node_is_in_tree(tree, node):
-    if tree == node:
-        return True
-    if isinstance(tree, gfxml.G) or isinstance(tree, gfxml.X):
-        for child in tree.children:
-            if node_is_in_tree(child, node):
-                return True
-    return False
-
 def get_definiensContent(definiendum, tree):
     if isinstance(tree, gfxml.X) and tree.tag == 'span':
         attrs = tree.attrs
@@ -129,14 +109,14 @@ def get_merged_tree(statement_tree, definiens_content_tree, definiendum):
         
         if (delete_tree.wrapfun == "WRAP_A") and (ADC_tree.node == "PredVP"):
             # "is" <adjective which is the definiendum>     =>     <definiens content>
-            delete_tree_temp = get_outerNode(statement_tree, get_outerNode(statement_tree, get_outerNode(statement_tree, get_outerNode(statement_tree, delete_tree))))
+            delete_tree_temp = gfxml.get_firstOuterNode(statement_tree, gfxml.get_firstOuterNode(statement_tree, gfxml.get_firstOuterNode(statement_tree, gfxml.get_firstOuterNode(statement_tree, delete_tree))))
             match delete_tree_temp:
                 case gfxml.G('PredVP', [np, gfxml.G('UseComp', [gfxml.G('CompAP', [gfxml.G('PositA', delete_tree)])])]):
                     merged_tree = gfxml.tree_subst(statement_tree, delete_tree_temp, ADC_tree)
         
         elif (delete_tree.wrapfun == "WRAP_A") and (ADC_tree.node == "formula_NP"):
             # <adjective which is the definiendum> <noun>     =>     <noun> "such that" <definiens content>
-            delete_tree_temp = get_outerNode(statement_tree, get_outerNode(statement_tree, get_outerNode(statement_tree, delete_tree)))
+            delete_tree_temp = gfxml.get_firstOuterNode(statement_tree, gfxml.get_firstOuterNode(statement_tree, gfxml.get_firstOuterNode(statement_tree, delete_tree)))
             match delete_tree_temp:
                 case gfxml.G('DetCN', [R_DetQuant, gfxml.G('AdjCN', [gfxml.G('PositA', deletedTree), R_Noun])]):
                     new_tree = gfxml.G('DetCN', [R_DetQuant, gfxml.G('ApposCN', [gfxml.G('ApposCN', [gfxml.G('AdvCN', [R_Noun, gfxml.G('such_Adv', [])]), gfxml.G('DetNP', [gfxml.G('DetQuant', [gfxml.G('that_Quant', []), gfxml.G('NumSg')])])]), ADC_tree])])
@@ -225,7 +205,7 @@ def main(statement_htmlfile_path: str, definition_htmlfile_path: str, definiendu
     assignedVariables = variableAssigner.get_assignedVariables(statement_tree_extendedVariables, definition_tree, definiens_content_tree) #TODO
     print("\nassignedVariables: " + str(assignedVariables))
     for variable in assignedVariables:
-        if not node_is_in_tree(statement_tree, gfxml.xify(assignedVariables[variable])):
+        if not gfxml.tree_contains_node(statement_tree, gfxml.xify(assignedVariables[variable])):
             statement_tree = statement_tree_extendedVariables
 
     #Modify definiens content tree 

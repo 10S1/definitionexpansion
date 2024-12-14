@@ -326,6 +326,32 @@ def tree_subst(t: Node, a: Node, b: Node) -> Node:
     return t
 
 
+def get_outerNodes(t: Node, subtree: Node) -> list[Node]:
+    outer_nodes = []
+    if isinstance(t, G) or isinstance(t, X):
+        if subtree in t.children:
+            outer_nodes.append(t)
+        else:
+            for child in t.children:
+                outer_nodes.extend(get_outerNodes(child, subtree))
+    return outer_nodes
+
+
+def get_firstOuterNode(t: Node, subtree: Node) -> Node:
+    outer_nodes = get_outerNodes(t, subtree)
+    return outer_nodes[0] if outer_nodes else None
+
+
+def tree_contains_node(t: Node, n: Node) -> bool:
+    if tree_eq(t, n):
+        return True
+    if isinstance(t, G) or isinstance(t, X):
+        for child in t.children:
+            if tree_contains_node(child, n):
+                return True
+    return False
+
+
 
 def test():
     import sys
