@@ -114,8 +114,8 @@ def testExample(example_name):
         examples = json.load(file)
     example = examples[example_name]
     statement_htmlfile_path = example["statement"]
-    definition_htmlfile_path = example["definition"]
-    definiendum = example["definiendum"]
+    definition_htmlfile_path = ""
+    definiendum = ""
     main(statement_htmlfile_path, definition_htmlfile_path, definiendum)
 
 testExample("E000")
