@@ -232,6 +232,6 @@ def test():
     get_assignedVariables(statement_tree, definition_tree, definiensContent_tree)
 
 
-test()
+#test()
 #TODO: Match definition formula only, if it is not part of the definiens content subtree
 #TODO: Improve score function

@@ -1,4 +1,23 @@
 {
+    "E000": {
+        "statement": "sHTML/Examples/statementE000.en.xhtml",
+        "definition expansion 1": {
+            "definition": "sHTML/Examples/node.en.xhtml",
+            "definiendum": "http://mathhub.info?a=smglom/sets&amp;p=mod&amp;m=pair&amp;l=en&amp;s=node"
+        },
+        "definition expansion 2": {
+            "definition": "sHTML/Examples/edge.en.xhtml",
+            "definiendum": "http://mathhub.info?a=smglom/sets&amp;p=mod&amp;m=pair&amp;l=en&amp;s=edge"
+        },
+        "definition reduction 1": {
+            "definition": "sHTML/Examples/state.en.xhtml",
+            "definiendum": "http://mathhub.info?a=smglom/sets&amp;p=mod&amp;m=pair&amp;l=en&amp;s=state"
+        },
+        "comprehension term reduction 1": {
+            "comprehension": "sHTML/Examples/CTR_element.en.xhtml"
+        }
+    },
+
     "E001": {
         "statement": "sHTML/Examples/statementE001.en.xhtml",
         "definition": "sHTML/Examples/empty.en.xhtml",
