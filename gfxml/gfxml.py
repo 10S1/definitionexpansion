@@ -91,7 +91,7 @@ MMT_NS = 'http://example.org/mmt'
 
 
 def parse_shtml(path: Path) -> etree._ElementTree:
-    with open(path, 'r') as f:
+    with open(path, 'r', encoding="utf-8") as f:
         # Hack: supply missing namespace declarations
         return etree.parse(
                 StringIO(
