@@ -14,7 +14,8 @@
             "definiendum": "https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&amp;p=mod&amp;m=pair&amp;l=en&amp;s=state"
         },
         "comprehension term reduction 1": {
-            "comprehension": "sHTML/Examples/CTR_element.en.xhtml"
+            "original": "sHTML/Examples/CTR_element_input.en.xhtml",
+            "comprehension": "sHTML/Examples/CTR_element_output.en.xhtml"
         }
     },
 
