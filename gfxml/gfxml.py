@@ -70,7 +70,7 @@ class XT(Node):
         return True
 
     def pure_node_strings(self) -> tuple[str, str]:
-        return self.text, ''
+        return self.text, ''   # TODO: escaping (except if it's the content of an mtext tag that was created using our hacks for recursive linearization)
 
 class G(Node):
     __match_args__ = ('node', 'children')
@@ -135,12 +135,6 @@ def get_gfxml_string(shtml: etree._ElementTree) -> tuple[list[X], str]:
             if node.tail:
                 strings.append(node.tail)
             return
-
-        # if skip_spurious_nodes and not node.text and not list(node):
-        #     print(f'Skipping spurious node: {node.tag}')
-        #     if node.tail:
-        #         strings.append(node.tail)
-        #     return
 
         nodes.append(X(
             tag=node.tag,
@@ -364,6 +358,87 @@ def tree_contains_node(t: Node, n: Node) -> bool:
     return False
 
 
+def parse_mtext_contents(parse_fn: Callable[[str], [list[str]]], tree: Node) -> list[Node]:
+    make_copy = lambda : deepcopy(tree)
+    todo_list = [tree]
+    final_result = []
+
+    class FoundNodeException(Exception):
+        def __init__(self, node: Node):
+            self.node = node
+
+    def _recurse(n: Node):
+        if isinstance(n, G):
+            for child in n.children:
+                _recurse(child)
+        elif isinstance(n, X):
+            if n.tag == 'mtext':
+                if not hasattr(n, '::already_processed'):
+                    raise FoundNodeException(n)
+            for child in n.children:
+                _recurse(child)
+        else:
+            assert isinstance(n, XT), f'Unexpected node type: {n}'
+
+
+    while todo_list:
+        root = todo_list.pop()
+        try:
+            _recurse(root)
+            final_result.append(root)   # nothing left to do
+        except FoundNodeException as e:
+            setattr(e.node, '::already_processed', True)
+            # create string, analogously to get_gfxml_string
+            strings: list[str] = []
+            nodes: list[X] = []
+
+            def _recurse2(node: X):
+                tag_num = len(nodes)
+                nodes.append(node)
+
+                if node.tag.endswith('math'):
+                    strings.append(f'<m {tag_num} >')
+                    strings.append(f'</m {tag_num} >')
+                    return
+
+                strings.append(f'< {tag_num} >')
+                for child in node.children:
+                    if isinstance(child, XT):
+                        strings.append(child.text)
+                    else:
+                        _recurse2(child)
+                strings.append(f'</ {tag_num} >')
+
+            for child in e.node.children:
+                if isinstance(child, XT):
+                    strings.append(child.text)
+                else:
+                    assert isinstance(child, X)
+                    _recurse2(deepcopy(child))
+
+            # integrate the parsed contents
+            string = re.sub(r'\s+', ' ', ' '.join(strings)).strip()
+            for gf_ast in parse_fn(string):
+                tree = build_tree(nodes, gf_ast)
+                e.node.children = [tree]
+                todo_list.append(deepcopy(root))
+
+    return final_result
+
+
+def linearize_mtree_contents(linearize_fn: Callable[[str], str], tree: Node):
+    if isinstance(tree, X) and tree.tag == 'mtext' and hasattr(tree, '::already_processed'):
+        assert len(tree.children) == 1
+        recovery_info, gf_input = tree.children[0].to_gf()
+        gf_lin = linearize_fn(gf_input)
+        result = final_recovery(gf_lin, recovery_info)
+        tree.children = [XT(result)]  # TODO: XT content should not be escaped!
+    elif isinstance(tree, G) or isinstance(tree, X):
+        for i in range(len(tree.children)):
+            linearize_mtree_contents(linearize_fn, tree.children[i])
+
+
+
 
 def test():
     import sys
@@ -379,15 +454,20 @@ def test():
     shell = gf.GFShellRaw('gf')
     output = shell.handle_command('i ' + str(Path(__file__).parent / 'TestEng.gf'))
     for s in sentences:
+        print('------------------------')
         print(s)
         gf_ast = shell.handle_command(f'p "{s[:-1]}"')
         print(gf_ast)
         tree = build_tree(xs, gf_ast)
         print(tree)
+        tree = parse_mtext_contents(lambda s: shell.handle_command(f'parse "{s}"').splitlines(), tree)[0]
+        print(tree)
         # rename john to mary
         match tree:
             case G(_, [X(_, [G('john') as g], _), _]):
                 g.node = 'mary'
+        print(tree)
+        linearize_mtree_contents(lambda s: shell.handle_command(f'linearize {s}'), tree)
         print(tree)
         recovery_info, gf_input = tree.to_gf()
         print('RECOVERY', recovery_info)
