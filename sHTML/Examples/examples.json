@@ -1,17 +1,14 @@
 {
     "E000": {
-        "statement": "sHTML/Examples/statementE000_firstPart.en.xhtml",
+        "statement": "sHTML/Examples/statementE000_lastPart.en.xhtml",
         "definition expansion 1": {
-            "definition": "sHTML/Examples/DE_node.en.xhtml",
-            "definiendum": "https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&amp;p=mod&amp;m=pair&amp;l=en&amp;s=node"
+            "definition": "sHTML/Examples/definitions/node-in-automaton.en.xhtml"
         },
         "definition expansion 2": {
-            "definition": "sHTML/Examples/DE_edge.en.xhtml",
-            "definiendum": "https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&amp;p=mod&amp;m=pair&amp;l=en&amp;s=edge"
+            "definition": "sHTML/Examples/definitions/edge-in-automaton.en.xhtml"
         },
         "definition reduction 1": {
-            "definition": "sHTML/Examples/DE_state.en.xhtml",
-            "definiendum": "https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&amp;p=mod&amp;m=pair&amp;l=en&amp;s=state"
+            "definition": "sHTML/Examples/definitions/state-in-automaton.en.xhtml"
         },
         "comprehension term reduction 1": {
             "original": "sHTML/Examples/CTR_element_input.en.xhtml",

@@ -40,24 +40,27 @@ def make_sentence_GfConform(sentence: str) -> str:
         sentence_pp = sentence_pp[0].lower()
     return sentence_pp
 
-def getDefiniendumLink(sentence: str) -> str:
-    match = re.search(r'data-definiens-of="([^"]+)"', sentence)
-    if match: return match.group(1)
-    return ""
+def getDefiniendumLink(shtml_path: str) -> str:
+    result = ""
+    with open(shtml_path, "r", encoding="utf-8") as file:
+        shtml_content = file.read()
+    match = re.search(r'data-ftml-definiens="([^"]+)"', shtml_content)
+    if match: result = match.group(1)
+    return result.replace("&amp;", "&")
 
-def get_definiensContent(definiendum, tree):
-    if isinstance(tree, gfxml.X) and tree.tag == 'span':
-        attrs = tree.attrs
-        if ("data-definiens-of" in attrs) and (attrs["data-definiens-of"] == definiendum):
-            return tree
-        for child in tree.children:
-            definiensContent_tree = get_definiensContent(definiendum, child)
+def get_definiensContent(definiendum_link, definition_tree):
+    if isinstance(definition_tree, gfxml.X) and definition_tree.tag == 'span':
+        attrs = definition_tree.attrs
+        if ("data-ftml-definiens" in attrs) and (attrs["data-ftml-definiens"] == definiendum_link):
+            return definition_tree
+        for child in definition_tree.children:
+            definiensContent_tree = get_definiensContent(definiendum_link, child)
             if definiensContent_tree is not None:
                 return definiensContent_tree
             
-    elif isinstance(tree, gfxml.G):
-        for child in tree.children:
-            definiensContent_tree = get_definiensContent(definiendum, child)
+    elif isinstance(definition_tree, gfxml.G):
+        for child in definition_tree.children:
+            definiensContent_tree = get_definiensContent(definiendum_link, child)
             if definiensContent_tree is not None:
                 return definiensContent_tree
             
@@ -87,7 +90,7 @@ def parseHtmltoTrees(shell: gf.GFShellRaw, htmlfile_path: str):
         print("\ninput_sentence_preprocessed: " + str(input_sentence_preprocessed))
         #input_sentence_preprocessed = "< 4 > " + str(input_sentence_preprocessed)
         gf_ast = shell.handle_command(f'p "{input_sentence_preprocessed}"')
-        print("\ninput_gf_ast: " + str(gf_ast))
+        #print("\ninput_gf_ast: " + str(gf_ast))
         all_statement_trees = []
         for line in gf_ast.splitlines():
             #print("input_xs: " + str(input_xs))
@@ -124,7 +127,8 @@ def get_extendedVariables_tree(statement_tree): #TODO: Implementation.
     #TODO: Add Variable after Nouns, which are in relation to the definiendum
     return statement_tree
 
-def get_alignedVariables_tree(definiens_content_tree, definition_tree):
+def get_alignedVariables_trees(definiens_content_tree, definition_tree, statement_tree): #TODO: Implementation.
+    return definiens_content_tree, statement_tree
     statement_tree_extendedVariables = get_extendedVariables_tree(statement_tree) #TODO
     assignedVariables = variableAssigner.get_assignedVariables(statement_tree_extendedVariables, definition_tree, definiens_content_tree) #TODO
     print("\nassignedVariables: " + str(assignedVariables))
@@ -143,7 +147,7 @@ def get_alignedVariables_tree(definiens_content_tree, definition_tree):
 def get_deleteTree_defExp(statement_tree, definiendum_link):
     if isinstance(statement_tree, gfxml.X) and statement_tree.tag == 'span':
         attrs = statement_tree.attrs
-        if ("data-symref" in attrs) and (attrs["data-symref"] == definiendum_link):
+        if ("data-ftml-definiendum" in attrs) and (attrs["data-ftml-definiendum"] == definiendum_link):
             return statement_tree
         for child in statement_tree.children:
             delete_tree = get_deleteTree_defExp(definiendum_link, child)
@@ -159,6 +163,7 @@ def get_deleteTree_defExp(statement_tree, definiendum_link):
     return None
 
 def get_mergedTree(statement_tree, definiens_content_tree, definiendum_link):
+    """Grammar dependent method."""
     merged_tree = None
     #Get actual definiens content tree (= definiens content tree without wrapper)
     ADC_tree = definiens_content_tree.children[0].children[0]
@@ -191,13 +196,22 @@ def get_mergedTree(statement_tree, definiens_content_tree, definiendum_link):
                     new_tree = gfxml.G('DetCN', [R_DetQuant, gfxml.G('ApposCN', [gfxml.G('ApposCN', [gfxml.G('AdvCN', [R_Noun, gfxml.G('such_Adv', [])]), gfxml.G('DetNP', [gfxml.G('DetQuant', [gfxml.G('that_Quant', []), gfxml.G('NumSg')])])]), ADC_tree])])
                     merged_tree = gfxml.tree_subst(statement_tree, delete_tree_temp, new_tree)
 
+        elif (delete_tree.wrapfun == "WRAP_N" and (ADC_tree.node == "AdvCN")):
+            # <noun which is the definiendum> <variable name>     =>     <noun of definiens content> <variable name> <rest of the definiens content>
+            delete_tree_temp = gfxml.get_firstOuterNode(statement_tree, gfxml.get_firstOuterNode(statement_tree, gfxml.get_firstOuterNode(statement_tree, delete_tree)))
+            #match delete_tree_temp:
+            #    case gfxml.G('DetCN', [R_DetQuant, gfxml.G('AdjCN', [gfxml.G('PositA', deletedTree), R_Noun])]):
+            #        noun_tree = gfxml.G('DetCN', [R_DetQuant, gfxml.G('ApposCN', [gfxml.G('ApposCN', [gfxml.G('AdvCN', [R_Noun, gfxml.G('such_Adv', [])]), gfxml.G('DetNP', [gfxml.G('DetQuant', [gfxml.G('that_Quant', []), gfxml.G('NumSg')])])]), ADC_tree])])
+            #        rest_tree =
+            #        merged_tree = gfxml.tree_subst(statement_tree, delete_tree_temp, new_tree)
+            #ADC_tree: G('AdvCN', [G('UseN', [X('span', [G('', [X('span', [G('element_N', [])], {'data-ftml-comp': ''}, 'WRAP_N')])], {'data-ftml-term': 'OMID', 'data-ftml-head': 'https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&p=mod&m=set&s=element', 'data-ftml-notationid': ''}, 'WRAP_N')]), G('PrepNP', [G('of_Prep', []), G('formula_NP', [X('math', [X('mrow', [X('mi', [XT('Q')], {'data-ftml-comp': ''}, None)], {'data-ftml-term': 'OMID', 'data-ftml-head': 'https://stexmmt.mathhub.info/:sTeX?a=Papers/cicm25-ling&p=mod&m=nfa/non-deterministic finite automaton&s=states', 'data-ftml-notationid': ''}, None)], {}, 'wrap_math')])])])
+
     return merged_tree
 
 #DEFINITION EXPANSION
 def definitionExpansion(statement_tree: str, definition_treeS: str, definiendum_link: str):
     print("\n----------\nDefinition Expansion")
-    for i in definition_treeS:
-        definition_tree = definition_treeS[i]
+    for definition_tree in definition_treeS:
         print("\ndefinition_tree: " + str(definition_tree))
 
         #Extract the definiens content tree out of the definition tree
@@ -211,13 +225,13 @@ def definitionExpansion(statement_tree: str, definition_treeS: str, definiendum_
         definiens_content_tree = rename_variables(definiens_content_tree, statement_tree) #TODO: Does not need the trees but the tag contents
 
         #Assign variables (and introduce variables in statement tree if necessary)
-        definiens_content_tree = get_alignedVariables_tree(definiens_content_tree, definition_tree) #TODO
+        definiens_content_tree, statement_tree = get_alignedVariables_trees(definiens_content_tree, definition_tree, statement_tree) #TODO
 
         #Align the category of the definiens content to the category of the definiendum
         merged_tree = get_mergedTree(statement_tree, definiens_content_tree, definiendum_link) #TODO
         print("\nmerged_tree: " + str(merged_tree))
-
-    return merged_tree
+        return merged_tree
+    return "Error."
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 
@@ -230,8 +244,7 @@ def get_deleteTree_defRed(statement_tree, definiendum): #TODO: Implementation.
 #DEFINITION REDUCTION
 def definitionReduction(statement_tree: str, definition_treeS: str, definiendum_link: str):
     print("\n----------\nDefinition Reduction")
-    for i in definition_treeS:
-        definition_tree = definition_treeS[i]
+    for definition_tree in definition_treeS:
         print("\ndefinition_tree: " + str(definition_tree))
 
         #Extract the definiens content tree out of the definition tree
@@ -300,7 +313,7 @@ def main(input):
     print("\n==========\nOUTPUT: " + output)
 
 def testExample(example_name):
-    with open("sHTML\Examples\examples.json", 'r') as file:
+    with open("sHTML\Examples\examples.json", 'r', encoding="utf-8") as file:
         examples = json.load(file)
     example = examples[example_name]
     main(example)
