@@ -215,6 +215,18 @@ def sentence_tokenize(text: str) -> list[str]:
             if tag not in open_tags and sentence.startswith(f'< {tag} >'):
                 sentence = sentence[len(f'< {tag} >'):]
 
+        # add missing tags at the beginning and end (e.g. "This </ 3 > is a sentence" -> "< 3 > This </ 3 > is a sentence")
+        open_tags = [int(match.group('i')) for match in re.finditer(r'< (?P<i>\d+) >', sentence)]
+        close_tags = [int(match.group('i')) for match in re.finditer(r'</ (?P<i>\d+) >', sentence)]
+
+        for tag in close_tags:
+            if tag not in open_tags:
+                sentence = f'< {tag} >' + sentence
+        for tag in reversed(open_tags):
+            if tag not in close_tags:
+                sentence = sentence + f'</ {tag} >'
+
+
         # post-processing
         sentence = sentence.replace('>', '> ')
         sentence = sentence.replace('<', ' <')
