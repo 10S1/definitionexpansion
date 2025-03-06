@@ -257,7 +257,14 @@ def definitionReduction(statement_tree: str, definition_treeS: str, definiendum_
         #Rename variables in definiens content tree if they are already used in the statement tree
         definiens_content_tree = rename_variables(definiens_content_tree, statement_tree)
 
-        #...
+        #Find definiens content tree in statement tree
+        replaced_node = get_deleteTree_defRed(statement_tree, definiens_content_tree)
+
+        #Align variables somehow
+
+        #Replace definiens content tree in statement tree by definiendum
+        replacement_node = None #Node for definiendum depending on replaced node
+        comprehensedTree = gfxml.tree_subst(statement_tree, replaced_node, replacement_node)
 
     reduced_tree = None
     return reduced_tree
@@ -270,8 +277,27 @@ def definitionReduction(statement_tree: str, definition_treeS: str, definiendum_
 #...
 
 #COMPREHENSION TERM REDUCTION
-def comprehensionTermReduction(statement_tree, original_path: str, reduction_path: str):
-    comprehensedTree = statement_tree
+def comprehensionTermReduction(statement_tree, original_treeS: str, reduction_treeS: str):
+    """ Concept: Find original tree in statement tree.
+        Create reduction tree based on original tree
+        Replace original tree in statement tree by reduction tree."""
+    
+    original_tree = original_treeS[0]
+    reduction_tree = reduction_treeS[0]
+    print("\noriginal_tree: " + str(original_tree))
+    print("\nreduction_tree: " + str(reduction_tree))
+    replaced_node = None 
+    replacement_node = None
+
+    if False: #"elements x of {y | z}"   =>   "elements x = y with z" 
+        #replaced_node = tree for "elements x of {y | z}"
+        #replacement_node = tree for "elements x = y with z" 
+        print()
+    
+    elif False: #Other cases
+        print()
+
+    comprehensedTree = gfxml.tree_subst(statement_tree, replaced_node, replacement_node)
     return comprehensedTree
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
