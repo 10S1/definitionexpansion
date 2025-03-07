@@ -150,7 +150,7 @@ def get_deleteTree_defExp(statement_tree, definiendum_link):
     print("statement_tree: " + str(statement_tree))
     if isinstance(statement_tree, gfxml.X) and statement_tree.tag == 'span':
         attrs = statement_tree.attrs
-        if ("data-ftml-definiendum" in attrs) and (attrs["data-ftml-definiendum"] == definiendum_link):
+        if ("data-ftml-head" in attrs) and (attrs["data-ftml-head"] == definiendum_link):
             return statement_tree
         for child in statement_tree.children:
             delete_tree = get_deleteTree_defExp(child, definiendum_link)
