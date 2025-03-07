@@ -145,18 +145,21 @@ def get_alignedVariables_trees(definiens_content_tree, definition_tree, statemen
     return definiens_content_tree
 
 def get_deleteTree_defExp(statement_tree, definiendum_link):
+    print()
+    print("definiendum_link: " + str(definiendum_link))
+    print("statement_tree: " + str(statement_tree))
     if isinstance(statement_tree, gfxml.X) and statement_tree.tag == 'span':
         attrs = statement_tree.attrs
         if ("data-ftml-definiendum" in attrs) and (attrs["data-ftml-definiendum"] == definiendum_link):
             return statement_tree
         for child in statement_tree.children:
-            delete_tree = get_deleteTree_defExp(definiendum_link, child)
+            delete_tree = get_deleteTree_defExp(child, definiendum_link)
             if delete_tree is not None:
                 return delete_tree
 
     elif isinstance(statement_tree, gfxml.G):
         for child in statement_tree.children:
-            delete_tree = get_deleteTree_defExp(definiendum_link, child)
+            delete_tree = get_deleteTree_defExp(child, definiendum_link)
             if delete_tree is not None:
                 return delete_tree
             
