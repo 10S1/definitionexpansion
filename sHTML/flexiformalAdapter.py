@@ -264,10 +264,10 @@ def definitionReduction(statement_tree: str, definition_treeS: str, definiendum_
 
         #Replace definiens content tree in statement tree by definiendum
         replacement_node = None #Node for definiendum depending on replaced node
-        comprehensedTree = gfxml.tree_subst(statement_tree, replaced_node, replacement_node)
-
-    reduced_tree = None
-    return reduced_tree
+        reduced_tree = gfxml.tree_subst(statement_tree, replaced_node, replacement_node)
+        return reduced_tree
+    
+    return statement_tree
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
 
