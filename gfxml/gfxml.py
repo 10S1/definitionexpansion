@@ -358,7 +358,7 @@ def tree_contains_node(t: Node, n: Node) -> bool:
     return False
 
 
-def parse_mtext_contents(parse_fn: Callable[[str], [list[str]]], tree: Node) -> list[Node]:
+def parse_mtext_contents(parse_fn: Callable[[str], list[str]], tree: Node) -> list[Node]:
     make_copy = lambda : deepcopy(tree)
     todo_list = [tree]
     final_result = []
