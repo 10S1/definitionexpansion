@@ -1,5 +1,7 @@
 ###----- Imports --------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
+import difflib
 import json
+import unicodedata
 import regex as re
 import shutil
 from pathlib import Path
@@ -41,10 +43,11 @@ def make_sentence_GfConform(sentence: str) -> str:
     return sentence_pp
 
 def getDefiniendumLink(shtml_path: str) -> str:
-    result = ""
+    result = "" 
     with open(shtml_path, "r", encoding="utf-8") as file:
         shtml_content = file.read()
-    match = re.search(r'data-ftml-definiens="([^"]+)"', shtml_content)
+    print("\nshtml_content: " + str(shtml_content))
+    match = re.search(r'data-ftml-definiendum="([^"]+)"', shtml_content)
     if match: result = match.group(1)
     return result.replace("&amp;", "&")
 
@@ -236,12 +239,142 @@ def definitionExpansion(statement_tree: str, definition_treeS: str, definiendum_
         return merged_tree
     return "Error."
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
-
+            
 
 
 ###----- Definition Reduction -------------------------------------------------------------------------------------------------------------------------------------------------------------###
 #Functions for Definition Reduction
-def get_deleteTree_defRed(statement_tree, definiendum): #TODO: Implementation.
+global mappingCounter
+
+def abstractTreeMapping(tree, mapping, seen_math_nodes):
+    """
+    Abstracts math nodes into unique VAR_X placeholders while ensuring identical math nodes
+    are mapped to the same placeholder.
+    Returns the abstracted tree and a mapping of VAR_X placeholders to their original math nodes.
+    """
+    if tree is None:
+        return mapping
+
+    #If the node is a math node, replace it with a MATH_X placeholder
+    match tree:
+        case gfxml.X('math', x):
+            #Check if this math node was already seen
+            seen = False
+            for i, seen_tree in enumerate(seen_math_nodes):
+                if seen_tree == tree:  # Direct structure comparison instead of hashing
+                    var_name = f"MATH_{i}"
+                    seen = True
+            if not seen:
+                #New math node -> assign new VAR_X
+                var_name = f"MATH_{len(seen_math_nodes)}"
+                seen_math_nodes.append(tree)
+                mapping[var_name] = tree
+            
+    #Recursively process children
+    if isinstance(tree, gfxml.G) or isinstance(tree, gfxml.X):
+        for child in tree.children:
+            mapping.update(abstractTreeMapping(child, mapping, seen_math_nodes))
+
+    return mapping
+
+def get_abstract_tree(tree):
+    mappingCounter = 0
+    mapping = abstractTreeMapping(tree, {}, [])
+    for map in mapping:
+        tree = gfxml.tree_subst(tree, mapping[map], map)
+    return tree, mapping
+
+def normalize_and_compare(struct1: str, struct2: str):
+    """Normalize two structures and compare them."""
+    
+    def normalize_text(text):
+        """Normalize a given text structure for comparison."""
+        # Strip leading/trailing whitespace and normalize newlines
+        text = text.strip().replace("\r\n", "\n").replace("\r", "\n")
+        
+        # Normalize Unicode (NFC form for consistency)
+        text = unicodedata.normalize("NFC", text)
+        
+        # Remove excess spaces
+        text = re.sub(r"\s+", " ", text)
+        
+        return text
+    
+    # Normalize both structures
+    norm_struct1 = normalize_text(struct1)
+    norm_struct2 = normalize_text(struct2)
+
+    # Compare the normalized versions
+    if norm_struct1 == norm_struct2:
+        return "The structures are identical after normalization."
+    else:
+        diff = difflib.unified_diff(norm_struct1.splitlines(), norm_struct2.splitlines(), lineterm='')
+        return list(diff)
+
+def get_deleteTree_defRed(statement_tree, abstract_DCT): 
+    #abstract_DT: G('PredVP', [G('formula_NP', ['MATH_0']), G('ComplSlash', [G('SlashV2a', [G('have_V2', [])]), G('DetCN', [G('DetQuant', [G('no_Quant', []), G('NumPl', [])]), G('UseN', [X('span', [G('', [X('span', [G('element_N', [])], {'data-ftml-comp': ''}, 'WRAP_N')])], {'data-ftml-notationid': '', 'data-ftml-head': 'https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&p=mod&m=set&s=element', 'data-ftml-term': 'OMID'}, 'WRAP_N')])])])])
+    #abstract_ST: G('PredVP', [G('formula_NP', ['MATH_0']), G('ComplSlash', [G('SlashV2a', [G('have_V2', [])]), G('DetCN', [G('DetQuant', [G('no_Quant', []), G('NumPl', [])]), G('UseN', [X('span', [G('', [X('span', [G('element_N', [])], {'data-ftml-comp': ''}, 'WRAP_N')])], {'data-ftml-notationid': '', 'data-ftml-head': 'https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&p=mod&m=set&s=element', 'data-ftml-term': 'OMID'}, 'WRAP_N')])])])])
+    #TODO: Get variants of definiens_content_tree => Use CNL grammar to get variants
+    abstract_ST, ST_mapping = get_abstract_tree(statement_tree)
+    print("\n-----")
+    print("\nabstract_DCT: " + str(abstract_DCT))
+    print("\nabstract_ST: " + str(abstract_ST))
+    if abstract_ST == abstract_DCT: #gfxml.tree_eq(abstract_ST, abstract_DCT): #Simple case
+        print("\nTRUUUUUU")
+        return statement_tree, ST_mapping 
+    elif isinstance(statement_tree, gfxml.G):
+        for child in statement_tree.children:
+            delete_tree, ST_mapping = get_deleteTree_defRed(child, abstract_DCT)
+            if delete_tree is not None:
+                return delete_tree, ST_mapping
+    return None, {}
+    """     
+    #elif x: #Case with changed variables
+    #assume that <m 1 > </m 1 > has no  < 2 >   < 3 > elements </ 3 >   </ 2 >
+    statement_tree: 
+    G('PredVP', [
+        G('formula_NP', [X('math', [X('mrow', [X('mi', [XT('X')], {'data-ftml-comp': ''}, None)], {'data-ftml-term': 'OMV', 'data-ftml-head': 'Xvar', 'data-ftml-notationid': ''}, None)], {}, 'wrap_math')]), 
+        G('ComplSlash', [
+            G('SlashV2a', [G('have_V2', [])]), 
+            G('DetCN', [
+                G('DetQuant', [
+                    G('no_Quant', []), 
+                    G('NumPl', [])
+                ]), 
+                G('UseN', [X('span', [G('', [X('span', [G('element_N', [])], {'data-ftml-comp': ''}, 'WRAP_N')
+            ])], {'data-ftml-head': 'https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&p=mod&m=set&s=element', 'data-ftml-notationid': '', 'data-ftml-term': 'OMID'}, 'WRAP_N')
+                            ])])])])
+    #a  < 2 >   < 3 > set </ 3 >   </ 2 >  <m 4 > </m 4 > is  < 5 > empty </ 5 >  iff  < 6 >  <m 7 > </m 7 > has no  < 8 >   < 9 > elements </ 9 >   </ 8 >   </ 6 > 
+    definiens_content_tree: 
+    G('PredVP', [
+        G('formula_NP', [X('math', [X('mrow', [X('mi', [XT('Y')], {'data-ftml-comp': ''}, None)], {'data-ftml-notationid': '', 'data-ftml-head': 'Yvar', 'data-ftml-term': 'OMV'}, None)], {}, 'wrap_math')]), 
+        G('ComplSlash', [
+            G('SlashV2a', [G('have_V2', [])]), 
+            G('DetCN', [
+                G('DetQuant', [
+                    G('no_Quant', []), 
+                    G('NumPl', [])
+                ]), 
+                G('UseN', [X('span', [G('', [X('span', [G('element_N', [])], {'data-ftml-comp': ''}, 'WRAP_N')
+            ])], {'data-ftml-term': 'OMID', 'data-ftml-notationid': '', 'data-ftml-head': 'https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&p=mod&m=set&s=element'}, 'WRAP_N')])])])])
+    """ 
+
+def get_definiendumTree(definition_tree, definiendum_link):
+    if isinstance(definition_tree, gfxml.X) and definition_tree.tag == 'span':
+        attrs = definition_tree.attrs
+        if ("data-ftml-definiendum" in attrs) and (attrs["data-ftml-definiendum"] == definiendum_link):
+            return definition_tree
+        for child in definition_tree.children:
+            delete_tree = get_definiendumTree(child, definiendum_link)
+            if delete_tree is not None:
+                return delete_tree
+
+    elif isinstance(definition_tree, gfxml.G):
+        for child in definition_tree.children:
+            delete_tree = get_definiendumTree(child, definiendum_link)
+            if delete_tree is not None:
+                return delete_tree
+            
     return None
 
 #DEFINITION REDUCTION
@@ -261,13 +394,20 @@ def definitionReduction(statement_tree: str, definition_treeS: str, definiendum_
         definiens_content_tree = rename_variables(definiens_content_tree, statement_tree)
 
         #Find definiens content tree in statement tree
-        replaced_node = get_deleteTree_defRed(statement_tree, definiens_content_tree)
-
-        #Align variables somehow
+        #print("\nstatement_tree: " + str(statement_tree))
+        #print("\ndefiniens_content_tree: " + str(definiens_content_tree))
+        for child in definiens_content_tree.children:
+            definiens_content_tree = child
+        for child in definiens_content_tree.children:
+            definiens_content_tree = child
+        abstract_DCT, DCT_mapping = get_abstract_tree(definiens_content_tree)
+        replaced_node, statement_mapping = get_deleteTree_defRed(statement_tree, abstract_DCT)
+        print("\nreplace_node/deleteTree: " + str(replaced_node))
 
         #Replace definiens content tree in statement tree by definiendum
-        replacement_node = None #Node for definiendum depending on replaced node
-        reduced_tree = gfxml.tree_subst(statement_tree, replaced_node, replacement_node)
+        replacement_node = get_definiendumTree(definition_tree, definiendum_link) #Node for definiendum depending on replaced node
+        if gfxml.get_firstOuterNode(definition_tree, replaced_node) == gfxml.get_firstOuterNode(statement_tree, replaced_node):
+            reduced_tree = gfxml.tree_subst(statement_tree, replaced_node, replacement_node)
         return reduced_tree
     
     return statement_tree
@@ -349,5 +489,5 @@ def testExample(example_name):
     #shell = initializeGfShell()
     #trees = parseHtmltoTrees(shell, example["comprehension term reduction 1"]["comprehension"])#["statement"])
     #string = linearizeTreeToString(shell, trees[0])
-testExample("E000")
+testExample("E001")
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###

@@ -14,5 +14,12 @@
             "original": "sHTML/Examples/Comprehensions/CTR_element_input.en.xhtml",
             "comprehension": "sHTML/Examples/Comprehensions/CTR_element_output.en.xhtml"
         }
+    },
+
+    "E001": {
+        "statement": "sHTML/Examples/Statements/definition-expansionE001.en.xhtml",
+        "definition reduction 1": {
+            "definition": "sHTML/Examples/Definitions/empty-set.en.xhtml"
+        }
     }
 }
