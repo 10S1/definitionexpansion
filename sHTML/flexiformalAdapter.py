@@ -284,33 +284,6 @@ def get_abstract_tree(tree):
         tree = gfxml.tree_subst(tree, mapping[map], map)
     return tree, mapping
 
-def normalize_and_compare(struct1: str, struct2: str):
-    """Normalize two structures and compare them."""
-    
-    def normalize_text(text):
-        """Normalize a given text structure for comparison."""
-        # Strip leading/trailing whitespace and normalize newlines
-        text = text.strip().replace("\r\n", "\n").replace("\r", "\n")
-        
-        # Normalize Unicode (NFC form for consistency)
-        text = unicodedata.normalize("NFC", text)
-        
-        # Remove excess spaces
-        text = re.sub(r"\s+", " ", text)
-        
-        return text
-    
-    # Normalize both structures
-    norm_struct1 = normalize_text(struct1)
-    norm_struct2 = normalize_text(struct2)
-
-    # Compare the normalized versions
-    if norm_struct1 == norm_struct2:
-        return "The structures are identical after normalization."
-    else:
-        diff = difflib.unified_diff(norm_struct1.splitlines(), norm_struct2.splitlines(), lineterm='')
-        return list(diff)
-
 def get_deleteTree_defRed(statement_tree, abstract_DCT): 
     #abstract_DT: G('PredVP', [G('formula_NP', ['MATH_0']), G('ComplSlash', [G('SlashV2a', [G('have_V2', [])]), G('DetCN', [G('DetQuant', [G('no_Quant', []), G('NumPl', [])]), G('UseN', [X('span', [G('', [X('span', [G('element_N', [])], {'data-ftml-comp': ''}, 'WRAP_N')])], {'data-ftml-notationid': '', 'data-ftml-head': 'https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&p=mod&m=set&s=element', 'data-ftml-term': 'OMID'}, 'WRAP_N')])])])])
     #abstract_ST: G('PredVP', [G('formula_NP', ['MATH_0']), G('ComplSlash', [G('SlashV2a', [G('have_V2', [])]), G('DetCN', [G('DetQuant', [G('no_Quant', []), G('NumPl', [])]), G('UseN', [X('span', [G('', [X('span', [G('element_N', [])], {'data-ftml-comp': ''}, 'WRAP_N')])], {'data-ftml-notationid': '', 'data-ftml-head': 'https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&p=mod&m=set&s=element', 'data-ftml-term': 'OMID'}, 'WRAP_N')])])])])
@@ -319,7 +292,7 @@ def get_deleteTree_defRed(statement_tree, abstract_DCT):
     print("\n-----")
     print("\nabstract_DCT: " + str(abstract_DCT))
     print("\nabstract_ST: " + str(abstract_ST))
-    if abstract_ST == abstract_DCT: #gfxml.tree_eq(abstract_ST, abstract_DCT): #Simple case
+    if gfxml.tree_eq(abstract_ST, abstract_DCT):
         print("\nTRUUUUUU")
         return statement_tree, ST_mapping 
     elif isinstance(statement_tree, gfxml.G):
@@ -328,36 +301,6 @@ def get_deleteTree_defRed(statement_tree, abstract_DCT):
             if delete_tree is not None:
                 return delete_tree, ST_mapping
     return None, {}
-    """     
-    #elif x: #Case with changed variables
-    #assume that <m 1 > </m 1 > has no  < 2 >   < 3 > elements </ 3 >   </ 2 >
-    statement_tree: 
-    G('PredVP', [
-        G('formula_NP', [X('math', [X('mrow', [X('mi', [XT('X')], {'data-ftml-comp': ''}, None)], {'data-ftml-term': 'OMV', 'data-ftml-head': 'Xvar', 'data-ftml-notationid': ''}, None)], {}, 'wrap_math')]), 
-        G('ComplSlash', [
-            G('SlashV2a', [G('have_V2', [])]), 
-            G('DetCN', [
-                G('DetQuant', [
-                    G('no_Quant', []), 
-                    G('NumPl', [])
-                ]), 
-                G('UseN', [X('span', [G('', [X('span', [G('element_N', [])], {'data-ftml-comp': ''}, 'WRAP_N')
-            ])], {'data-ftml-head': 'https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&p=mod&m=set&s=element', 'data-ftml-notationid': '', 'data-ftml-term': 'OMID'}, 'WRAP_N')
-                            ])])])])
-    #a  < 2 >   < 3 > set </ 3 >   </ 2 >  <m 4 > </m 4 > is  < 5 > empty </ 5 >  iff  < 6 >  <m 7 > </m 7 > has no  < 8 >   < 9 > elements </ 9 >   </ 8 >   </ 6 > 
-    definiens_content_tree: 
-    G('PredVP', [
-        G('formula_NP', [X('math', [X('mrow', [X('mi', [XT('Y')], {'data-ftml-comp': ''}, None)], {'data-ftml-notationid': '', 'data-ftml-head': 'Yvar', 'data-ftml-term': 'OMV'}, None)], {}, 'wrap_math')]), 
-        G('ComplSlash', [
-            G('SlashV2a', [G('have_V2', [])]), 
-            G('DetCN', [
-                G('DetQuant', [
-                    G('no_Quant', []), 
-                    G('NumPl', [])
-                ]), 
-                G('UseN', [X('span', [G('', [X('span', [G('element_N', [])], {'data-ftml-comp': ''}, 'WRAP_N')
-            ])], {'data-ftml-term': 'OMID', 'data-ftml-notationid': '', 'data-ftml-head': 'https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&p=mod&m=set&s=element'}, 'WRAP_N')])])])])
-    """ 
 
 def get_definiendumTree(definition_tree, definiendum_link):
     if isinstance(definition_tree, gfxml.X) and definition_tree.tag == 'span':
