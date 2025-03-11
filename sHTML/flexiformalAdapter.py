@@ -46,7 +46,7 @@ def getDefiniendumLink(shtml_path: str) -> str:
     result = "" 
     with open(shtml_path, "r", encoding="utf-8") as file:
         shtml_content = file.read()
-    print("\nshtml_content: " + str(shtml_content))
+    #print("\nshtml_content: " + str(shtml_content))
     match = re.search(r'data-ftml-definiendum="([^"]+)"', shtml_content)
     if match: result = match.group(1)
     return result.replace("&amp;", "&")
@@ -285,21 +285,17 @@ def get_abstract_tree(tree):
     return tree, mapping
 
 def get_deleteTree_defRed(statement_tree, abstract_DCT): 
-    #abstract_DT: G('PredVP', [G('formula_NP', ['MATH_0']), G('ComplSlash', [G('SlashV2a', [G('have_V2', [])]), G('DetCN', [G('DetQuant', [G('no_Quant', []), G('NumPl', [])]), G('UseN', [X('span', [G('', [X('span', [G('element_N', [])], {'data-ftml-comp': ''}, 'WRAP_N')])], {'data-ftml-notationid': '', 'data-ftml-head': 'https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&p=mod&m=set&s=element', 'data-ftml-term': 'OMID'}, 'WRAP_N')])])])])
-    #abstract_ST: G('PredVP', [G('formula_NP', ['MATH_0']), G('ComplSlash', [G('SlashV2a', [G('have_V2', [])]), G('DetCN', [G('DetQuant', [G('no_Quant', []), G('NumPl', [])]), G('UseN', [X('span', [G('', [X('span', [G('element_N', [])], {'data-ftml-comp': ''}, 'WRAP_N')])], {'data-ftml-notationid': '', 'data-ftml-head': 'https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&p=mod&m=set&s=element', 'data-ftml-term': 'OMID'}, 'WRAP_N')])])])])
     #TODO: Get variants of definiens_content_tree => Use CNL grammar to get variants
     abstract_ST, ST_mapping = get_abstract_tree(statement_tree)
-    print("\n-----")
-    print("\nabstract_DCT: " + str(abstract_DCT))
-    print("\nabstract_ST: " + str(abstract_ST))
-    if gfxml.tree_eq(abstract_ST, abstract_DCT):
-        print("\nTRUUUUUU")
+    if str(abstract_ST) == str(abstract_DCT): #gfxml.tree_eq(abstract_ST, abstract_DCT):
         return statement_tree, ST_mapping 
+    
     elif isinstance(statement_tree, gfxml.G):
         for child in statement_tree.children:
             delete_tree, ST_mapping = get_deleteTree_defRed(child, abstract_DCT)
             if delete_tree is not None:
                 return delete_tree, ST_mapping
+            
     return None, {}
 
 def get_definiendumTree(definition_tree, definiendum_link):
@@ -345,18 +341,49 @@ def definitionReduction(statement_tree: str, definition_treeS: str, definiendum_
             definiens_content_tree = child
         abstract_DCT, DCT_mapping = get_abstract_tree(definiens_content_tree)
         replaced_node, statement_mapping = get_deleteTree_defRed(statement_tree, abstract_DCT)
-        print("\nreplace_node/deleteTree: " + str(replaced_node))
 
         #Replace definiens content tree in statement tree by definiendum
+        reduced_tree = ""
         replacement_node = get_definiendumTree(definition_tree, definiendum_link) #Node for definiendum depending on replaced node
-        for map in DCT_mapping: 
-            gfxml.tree_subst(replacement_node, DCT_mapping[map], statement_mapping[map])
+        #for map in DCT_mapping: 
+        #    gfxml.tree_subst(replacement_node, DCT_mapping[map], statement_mapping[map])
 
-        if gfxml.get_firstOuterNode(definition_tree, replaced_node) == gfxml.get_firstOuterNode(statement_tree, replaced_node):
+        print("\n-----")
+        print("\nreplace_node/deleteTree: " + str(replaced_node))
+        print("\nreplacement_node: " + str(replacement_node))
+        print("\nstatement_tree: " + str(statement_tree))
+
+        #Construct Replacement Node:  <span data-ftml-definiendum="X">S</span>   ->   <span data-ftml-head="X" data-ftml-term="OMID" data-ftml-notationid="" ><span data-ftml-comp="">S</span></span>
+        match replacement_node:
+            case gfxml.X('span', [gfxml.G(word_1, [])], {'data-ftml-definiendum': tag_1}, wrap_1):
+                replacement_node = gfxml.X('span', [gfxml.G('', [gfxml.X('span', [gfxml.G(word_1, [])], {'data-ftml-comp': ''}, wrap_1)])], {'data-ftml-head': tag_1, 'data-ftml-term': 'OMID', 'data-ftml-notationid': ''}, wrap_1)
+
+        if replaced_node.node == replacement_node.wrapfun: #gfxml.get_firstOuterNode(definition_tree, replaced_node) == gfxml.get_firstOuterNode(statement_tree, replaced_node):
             reduced_tree = gfxml.tree_subst(statement_tree, replaced_node, replacement_node)
-            
-        return reduced_tree
+            return reduced_tree
     
+        elif (replacement_node.wrapfun == "WRAP_A") and (replaced_node.node == "PredVP"):
+            # "has" + <bla>     =>     "is" + <adjective>
+            match replaced_node:
+                case gfxml.G('PredVP', [gfxml.G('formula_NP', c_1), gfxml.G('ComplSlash', c_2)]):
+                    replacement_node = gfxml.G('PredVP', [gfxml.G('formula_NP', c_1), gfxml.G('UseComp', [gfxml.G('CompAP', [gfxml.G('PositA', [replacement_node])])])])
+                    # [G('', [X('span', [G('empty_A', [])], {'data-ftml-comp': ''}, 'WRAP_A')])], {'data-ftml-head': 'https://stexmmt.mathhub.info/:sTeX?a=smglom/sets&p=mod&m=emptyset&s=empty', 'data-ftml-term': 'OMID', 'data-ftml-notationid': ''}, 'WRAP_A')])])])])])])
+                    reduced_tree = gfxml.tree_subst(statement_tree, replaced_node, replacement_node)
+                    print("\nresult_tree: " + str(reduced_tree))
+                    return reduced_tree
+            
+        """
+        elif (delete_tree.wrapfun == "WRAP_A") and (ADC_tree.node == "formula_NP"):
+            # <adjective which is the definiendum> <noun>     =>     <noun> "such that" <definiens content>
+            delete_tree_temp = gfxml.get_firstOuterNode(statement_tree, gfxml.get_firstOuterNode(statement_tree, gfxml.get_firstOuterNode(statement_tree, delete_tree)))
+            match delete_tree_temp:
+                case gfxml.G('DetCN', [R_DetQuant, gfxml.G('AdjCN', [gfxml.G('PositA', deletedTree), R_Noun])]):
+                    new_tree = gfxml.G('DetCN', [R_DetQuant, gfxml.G('ApposCN', [gfxml.G('ApposCN', [gfxml.G('AdvCN', [R_Noun, gfxml.G('such_Adv', [])]), gfxml.G('DetNP', [gfxml.G('DetQuant', [gfxml.G('that_Quant', []), gfxml.G('NumSg')])])]), ADC_tree])])
+                    merged_tree = gfxml.tree_subst(statement_tree, delete_tree_temp, new_tree)
+        """
+
+
+    print("\nMISSING: Add new grammatical structure to definitionReduction().")
     return statement_tree
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
 
