@@ -317,6 +317,8 @@ def tree_eq(a: Node, b: Node) -> bool:
             return f1 == f2 and len(c1) == len(c2) and all(tree_eq(aa, bb) for aa, bb in zip(c1, c2))
         case (XT(t1), XT(t2)):
             return t1 == t2
+        case (str(_), str(_)):
+            return a == b
         case _:
             return False
 
