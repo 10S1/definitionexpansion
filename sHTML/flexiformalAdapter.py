@@ -349,8 +349,12 @@ def definitionReduction(statement_tree: str, definition_treeS: str, definiendum_
 
         #Replace definiens content tree in statement tree by definiendum
         replacement_node = get_definiendumTree(definition_tree, definiendum_link) #Node for definiendum depending on replaced node
+        for map in DCT_mapping: 
+            gfxml.tree_subst(replacement_node, DCT_mapping[map], statement_mapping[map])
+
         if gfxml.get_firstOuterNode(definition_tree, replaced_node) == gfxml.get_firstOuterNode(statement_tree, replaced_node):
             reduced_tree = gfxml.tree_subst(statement_tree, replaced_node, replacement_node)
+            
         return reduced_tree
     
     return statement_tree
