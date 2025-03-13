@@ -452,6 +452,9 @@ def main(input):
             comprehension_treeS = parseHtmltoTrees(shell, comprehension_path)
             statement_tree = comprehensionTermReduction(statement_tree, original_treeS, comprehension_treeS)
 
+        if "result" in element:
+            pass
+
     output = linearizeTreeToString(shell, statement_tree)
     print("\n==========\nOUTPUT: " + output)
 
@@ -463,5 +466,5 @@ def testExample(example_name):
     #shell = initializeGfShell()
     #trees = parseHtmltoTrees(shell, example["comprehension term reduction 1"]["comprehension"])#["statement"])
     #string = linearizeTreeToString(shell, trees[0])
-testExample("E001")
+testExample("DR002")
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
