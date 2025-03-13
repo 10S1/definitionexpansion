@@ -1,5 +1,5 @@
 {
-    "E000": {
+    "CA000": {
         "statement": "sHTML/Examples/Statements/E000-lastPart.en.xhtml ",
         "definition expansion 1": {
             "definition": "sHTML/Examples/Definitions/node-in-automaton.en.xhtml"
@@ -16,14 +16,14 @@
         }
     },
 
-    "E001": {
+    "DR001": {
         "statement": "sHTML/Examples/Statements/E001_expanded.en.xhtml",
         "definition reduction 1": {
             "definition": "sHTML/Examples/Definitions/empty-set.en.xhtml"
         }
     },
 
-    "E002": {
+    "DR002": {
         "statement": "sHTML/Examples/Statements/de-02-output.en.xhtml",
         "definition reduction 1": {
             "definition": "sHTML/Examples/Definitions/consistent-set-of-propositions.en.xhtml"
