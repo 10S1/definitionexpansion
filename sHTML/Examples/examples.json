@@ -29,5 +29,13 @@
             "definition": "sHTML/Examples/Definitions/consistent-set-of-propositions.en.xhtml"
         },
         "result": "sHTML/Examples/Statements/de-02-input.en.xhtml"
+    },
+
+    "DR003": {
+        "statement": "sHTML/Examples/Statements/de-03-output.en.xhtml",
+        "definition reduction 1": {
+            "definition": "sHTML/Examples/Definitions/positive-integer.en.xhtml"
+        },
+        "result": "sHTML/Examples/Statements/de-03-input.en.xhtml"
     }
 }
