@@ -21,5 +21,13 @@
         "definition reduction 1": {
             "definition": "sHTML/Examples/Definitions/empty-set.en.xhtml"
         }
+    },
+
+    "E002": {
+        "statement": "sHTML/Examples/Statements/de-02-output.en.xhtml",
+        "definition reduction 1": {
+            "definition": "sHTML/Examples/Definitions/consistent-set-of-propositions.en.xhtml"
+        },
+        "result": "sHTML/Examples/Statements/de-02-input.en.xhtml"
     }
 }
