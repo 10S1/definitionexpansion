@@ -1,3 +1,13 @@
+"""
+A hacky implementation to process XML/HTML documents with GF.
+
+It requires clean-up and documentation.
+It works already and is somewhat complicated, so this is not a priority.
+"""
+
+from __future__ import annotations
+
+import abc
 from io import StringIO
 from pathlib import Path
 from typing import Callable, Optional
@@ -5,6 +15,7 @@ import re
 import functools
 from copy import deepcopy
 
+import nltk.tokenize
 from lxml import etree
 
 
@@ -14,12 +25,17 @@ def stanza_tokenizer():
     return stanza.Pipeline(lang='en', processors='tokenize')
 
 
-class Node:
+class Node(abc.ABC):
+    children: list[Node]
+
     def to_gf(self) -> tuple[list[tuple[str, str]], str]:
         _tags = []
         return _tags, self._to_gf(_tags)
         
     def _to_gf(self, _tags: list[tuple[str, str]]) -> str:
+        raise NotImplementedError()
+
+    def equals(self, other: Node) -> bool:
         raise NotImplementedError()
 
 
@@ -32,6 +48,15 @@ class X(Node):
         self.children = children
         self.attrs = attrs
         self.wrapfun = wrapfun
+
+    def equals(self, other: Node) -> bool:
+        if not isinstance(other, X):
+            return False
+        return (
+                self.tag == other.tag and len(self.children) == len(other.children) and
+                all(a.equals(b) for a, b in zip(self.children, other.children)) and
+                self.attrs == other.attrs and self.wrapfun == other.wrapfun
+        )
 
     def pure_node_strings(self) -> tuple[str, str]:
         a, b = f'<{self.tag} ' + ' '.join(f'{k}="{v}"' for k, v in self.attrs.items()) + '>', f'</{self.tag}>'
@@ -54,14 +79,19 @@ class X(Node):
             _tags.append((f'<{self.tag} ' + ' '.join(f'{k}="{v}"' for k, v in self.attrs.items()) + '>', f'</{self.tag}>'))
             return f'({self.wrapfun} (tag {tag_num}) {" ".join(child._to_gf(_tags) for child in self.children)})'
 
+
 class XT(Node):
     __match_args__ = ('text',)
 
     def __init__(self, text: str):
         self.text = text
+        self.children = []
 
     def __repr__(self):
         return f'XT({self.text!r})'
+
+    def equals(self, other: Node) -> bool:
+        return isinstance(other, XT) and self.text == other.text
 
     def _to_gf(self, _tags: list[tuple[str, str]]) -> str:
         raise RuntimeError('XT nodes should only be in pure X nodes and never passed to GF')
@@ -72,12 +102,21 @@ class XT(Node):
     def pure_node_strings(self) -> tuple[str, str]:
         return self.text, ''   # TODO: escaping (except if it's the content of an mtext tag that was created using our hacks for recursive linearization)
 
+
 class G(Node):
     __match_args__ = ('node', 'children')
 
     def __init__(self, node: str, children: list[Node] = []):
         self.node = node
         self.children = children
+
+    def equals(self, other: Node) -> bool:
+        if not isinstance(other, G):
+            return False
+        return (
+                self.node == other.node and len(self.children) == len(other.children) and
+                all(a.equals(b) for a, b in zip(self.children, other.children))
+        )
 
     def __repr__(self):
         return f'G({self.node!r}, {self.children!r})'
@@ -184,13 +223,13 @@ def sentence_tokenize(text: str) -> list[str]:
 
     #print(text)
 
-    nlp = stanza_tokenizer()
-    doc = nlp(without_tags)
     sentences: list[str] = []
-    for sent in doc.sentences:
-        start = sent.words[0].start_char
-        end = sent.words[-1].end_char
-
+#     nlp = stanza_tokenizer()
+#     doc = nlp(without_tags)
+#     for sent in doc.sentences:
+#         start = sent.words[0].start_char
+#         end = sent.words[-1].end_char
+    for start, end in nltk.tokenize.PunktSentenceTokenizer().span_tokenize(without_tags):
         sentence = ''
         for i in range(start, end):
             for tag in tags[i]:
@@ -267,10 +306,10 @@ def build_tree(nodes: list[X], ast_str: str) -> Node:
         if tag.lower().startswith('wrap'):
             node = deepcopy(nodes[read_tag()])
             node.wrapfun = tag
-            if tag != 'wrap_math':
-                node.children = [read_node()]
-            else:
+            if tag == 'wrap_math':
                 read_node()
+            else:
+                node.children = [read_node()]
             return node
         else:
             children = []
@@ -283,11 +322,15 @@ def build_tree(nodes: list[X], ast_str: str) -> Node:
                     children.append(new_node)
                 elif ast_str[i] == ')':
                     i += 1
-                    return G(tag, children)
+                    break
                 elif (ast_str[i].isalnum() or ast_str[i] in {'_', '\'', '/', '?', ':', '#', '.', '-'}):
                     children.append(G(read_label()))
                 else:
                     raise ValueError(f'Unexpected character in AST: {ast_str[i]!r}')
+
+            if not tag:
+                assert len(children) == 1
+                return children[0]
             return G(tag, children)
     
     node = read_node()

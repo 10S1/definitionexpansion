@@ -11,14 +11,16 @@ incomplete concrete CoreFunctor of Core = XmlConcr ** open Syntax, Grammar, Symb
             mkKind : N -> _Kind = \n -> {cn = mkCN n; adv = empty_Adv};
         };
 
+        kind2CN : _Kind -> CN = \k -> mkCN k.cn k.adv;
+
     lincat
         Stmt = S;
+        StmtFin = {s: Str};
         PreKind = CN;
         Kind = _Kind;
         NamedKind = CN;
         Term = NP;
         Ident = _Ident;
-        PreProperty = AP;
         Property = AP;
         ArgMarker = Prep;
 
@@ -28,8 +30,8 @@ incomplete concrete CoreFunctor of Core = XmlConcr ** open Syntax, Grammar, Symb
         math_ident m = {s = m.s};
 
         -- prekinds/kinds/named kinds
-        plain_prekind pk = mkKind pk;
-        wrapped_prekind tag pk = mkKind (WRAP_CN tag pk);
+        prekind_to_kind pk = mkKind pk;
+        wrapped_prekind tag pk = WRAP_CN tag pk;
         name_kind k i = mkCN (mkCN k.cn (symb i.s)) k.adv;
         property_prekind pp pk = mkCN pp pk;
         kind_with_arg k am t = {
@@ -47,8 +49,7 @@ incomplete concrete CoreFunctor of Core = XmlConcr ** open Syntax, Grammar, Symb
         plural_term nk = DetCN aPl_Det nk;
 
         -- properties
-        plain_preproperty pp = pp;
-        wrapped_preproperty tag pp = WRAP_AP tag pp;
+        wrapped_property tag p = WRAP_AP tag p;
         property_with_arg p am t = AdvAP p (PrepNP am t);
 
         -- definitions
@@ -58,4 +59,9 @@ incomplete concrete CoreFunctor of Core = XmlConcr ** open Syntax, Grammar, Symb
         formula_stmt m = lin S {s = m.s};
         exists_nkind nk = mkS (mkCl (DetCN a_Det nk));
         exists_nkind_pl nk = mkS (mkCl (DetCN aPl_Det nk));
+
+        let_kind_stmt i nk = lin S { s = (ImpP3 (symb i.s) (mkVP nk)).s };
+
+        fin_stmt s = {s = {- CAPIT ++ -} s.s ++ "."};
+        wrapped_stmtfin tag sf = {s = wrap tag sf.s};
 }

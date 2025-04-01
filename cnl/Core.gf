@@ -1,12 +1,13 @@
 abstract Core = Xml ** {
     cat
         Stmt;           -- "there is an odd integer"
-        PreKind;        -- "function"
-        Kind;           -- "function ... from X to Y"
-        NamedKind;      -- "function f from X to Y"
+        StmtFin;        -- "There is an odd integer ."
+        -- distinction of Kind and PreKind reduces number of readings (properties can only be applied to PreKind, arguments only to Kind)
+        PreKind;        -- "bijective function"
+        Kind;           -- "bijective function ... from X to Y"
+        NamedKind;      -- "bijective function f from X to Y"
         Term;           -- "every function f from X to Y"
         Ident;          -- "f"
-        PreProperty;    -- "divisible"
         Property;       -- "divisible by 2"
         ArgMarker;      -- "by", "of degree", ...
 
@@ -16,8 +17,8 @@ abstract Core = Xml ** {
         math_ident : MathNode -> Ident;
 
         -- prekinds/kinds/named kinds
-        plain_prekind : PreKind -> Kind;
-        wrapped_prekind : Tag -> PreKind -> Kind;
+        prekind_to_kind : PreKind -> Kind;
+        wrapped_prekind : Tag -> PreKind -> PreKind;
         name_kind : Kind -> Ident -> NamedKind;
         such_that_named_kind : NamedKind -> Stmt -> NamedKind;
         such_that_named_kind_v1 : NamedKind -> Stmt -> NamedKind;
@@ -33,14 +34,18 @@ abstract Core = Xml ** {
         math_term : MathNode -> Term;
 
         -- properties
-        plain_preproperty : PreProperty -> Property;
-        wrapped_preproperty : Tag -> PreProperty -> Property;
+        wrapped_property : Tag -> Property -> Property;
         property_with_arg : Property -> ArgMarker -> Term -> Property;
 
         -- statements
         iff_stmt : Stmt -> Stmt -> Stmt;
         formula_stmt : MathNode -> Stmt;
         stmt_for_term : Stmt -> Term -> Stmt;
+
+        let_kind_stmt : Ident -> NamedKind -> Stmt;    -- in practice, NamedKind should be anonymous, but Kind is too restricted (e.g. no "such that")
+
+        fin_stmt : Stmt -> StmtFin;
+        wrapped_stmtfin : Tag -> StmtFin -> StmtFin;
 
         -- definitions
         define_nkind_as_nkind : NamedKind -> NamedKind -> Stmt;
