@@ -7,8 +7,15 @@ resource MDictEng = open SyntaxEng, ParadigmsEng in {
         dict_node_N: N = mkN "node";
         dict_state_N: N = mkN "state";
         dict_pair_N: N = mkN "pair";
+        dict_set_N: N = mkN "set";
+        dict_model_N: N = mkN "model";
+        dict_formula_N: N = mkN "formula";
+        dict_proposition_N: N = mkN "proposition";
 
         dict_positive_A: A = mkA "positive";
         dict_finite_A: A = mkA "finite";
         dict_divisible_A: A = mkA "divisible";
+        dict_countable_A: A = mkA "countable";
+        dict_consistent_A: A = mkA "consistent";
+        dict_derivable_A: A = mkA "derivable";
 }

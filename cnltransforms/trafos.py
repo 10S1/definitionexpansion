@@ -4,7 +4,8 @@
 
 import dataclasses
 from copy import deepcopy
-from typing import Optional, Callable, Literal
+from typing import Optional, Callable, Literal, Protocol
+from re import match as re_match
 
 from cnltransforms.document import Document
 from cnltransforms.gfxml import Node, X, G
@@ -17,9 +18,9 @@ class Definiens:
     argmarkers: list[G]
     term_type_: Literal['property', 'kind']
 
-    # given the arguments (including the "main" argument),
+    # given the arguments (including the "main" argument) and, optionally, their "declaring term" to be used for the first instantiation,
     # returns the accordingly instantiated definiens
-    equivalent_stmt: Callable[[list[Node]], Node]
+    equivalent_stmt: Callable[[list[tuple[Node, Optional[Node]]]], Node]
 
 
 # def arg_extract(node: Node) -> Node | Literal['anonymous']:
@@ -32,20 +33,27 @@ class Definiens:
 #             raise Exception(f'Failed to extract argument from {node}')
 
 
-def _instantiate(args: list[Node], definiens: Node) -> Callable[[list[Node]], Node]:
+def _instantiate(args: list[Node], definiens: Node) -> Callable[[list[tuple[Node, Optional[Node]]]], Node]:
     print('_instantiate', args, definiens)
-    def instantiate(args_: list[Node]) -> Node:
+    def instantiate(args_: list[tuple[Node, Optional[Node]]]) -> Node:
         # instantiate the definiens with the given arguments
         if len(args_) != len(args):
             raise Exception(f'Expected {len(args)} arguments, got {len(args_)}')
+
+        args2_ = [[a, at] for a, at in args_]
 
         definiens_ = deepcopy(definiens)
         parents = parent_dict(definiens_)
 
         def _recurse(node: Node):
-            for (arg, arg_) in zip(args, args_):
+            for (arg, arg_) in zip(args, args2_):
                 if node.equals(arg):
-                    parents[node].parent.children[parents[node].position] = arg_
+                    if arg_[1] is not None:
+                        print('BAD HACK')    # this only works if the term is basically just the variable that gets replaced
+                        node = parents.filter_parent(node, lambda x: get_node_type(x) == 'Term')
+
+                    parents[node].parent.children[parents[node].position] = arg_[0] if arg_[1] is None else arg_[1]
+                    arg_[1] = None    # never use the term again
                     return
             for child in node.children:
                 _recurse(child)
@@ -80,23 +88,32 @@ def extract_definiens(doc: Document, term_uri: str) -> Optional[list[Definiens]]
             parents = parent_dict(reading)
 
             match parents[parents[node].parent].parent:
-                case G('iff_stmt', [G(define_term_prop, [mainarg, _node]), definiens]) \
-                    if define_term_prop.startswith('define_term_prop'):
+                case G(def_iff, [G(defprop, [mainarg, _node]), definiens]) \
+                    if re_match(r'define_(nkind|formula)_prop(_v\d+)?$', defprop) and \
+                       re_match(r'defcore_if(f)?_stmt(_v\d+)?', def_iff)\
+                    :
                     assert node == _node
                     result.append(Definiens(term_uri, [], 'property', _instantiate([deepcopy(get_mainarg_from_math(mainarg))], definiens)))
 
                 case _:
+                    print(parents[parents[node].parent].parent)
                     raise Exception('Failed to match definition type')
 
         return result
 
 
 def get_mainarg_from_math(node: Node) -> X:
-    if isinstance(node, G):
-        assert node.node == 'math_term'
-        return get_mainarg_from_math(node.children[0])
-    assert isinstance(node, X), node
     # TODO: Cases like x∈A
+
+    if isinstance(node, G):
+        if node.node == 'math_ident':
+            return get_mainarg_from_math(node.children[0])
+        assert get_node_type(node) == 'NamedKind', node
+        assert node.node == 'name_kind'
+        return get_mainarg_from_math(node.children[1])
+        # assert node.node == 'math_term'
+        # return get_mainarg_from_math(node.children[0])
+    assert isinstance(node, X), node
     if node.tag == 'math':
         children = node.children
         if len(children) == 1:
@@ -109,15 +126,22 @@ def get_mainarg_from_math(node: Node) -> X:
 def get_mainarg_from_context(root: Node, for_: Node) -> Optional[tuple[Node, X]]:
     """
         ("every integer is positive", "integer") -> ("every integer X is positive", "X"),
+        ("every integer is positive", "positive") -> ("every integer X is positive", "X"),
         ("z is positive", "z") -> ("z is positive", "z"),
     """
+    # the following logs help with tracing
+    # print('getting main arg for', for_)
+    # print('  :', get_node_type(for_))
     parents = parent_dict(root)
     assert for_ in parents
 
     if get_node_type(for_) == 'Property':
         match parents.get_parent(for_, skip_X=True):
-            case G('property_prekind'):
-                return get_mainarg_from_context(root, parents.get_parent(for_, skip_X=True))
+            case G('property_prekind') as p:
+                return get_mainarg_from_context(root, p)
+            case G('term_is_property_stmt') as p:   # TODO: in general, get subject from stmt
+                return get_mainarg_from_context(root, p.children[0])
+
 
     elif get_node_type(for_) == 'PreKind':
         return get_mainarg_from_context(
@@ -137,6 +161,16 @@ def get_mainarg_from_context(root: Node, for_: Node) -> Optional[tuple[Node, X]]
             case G('name_kind', [_kind, ident]):
                 return get_mainarg_from_context(root, ident)
 
+    elif get_node_type(for_) == 'Term':
+        assert isinstance(for_, G)
+        if for_.node == 'quantified_nkind':
+            return get_mainarg_from_context(root, for_.children[1])
+
+    elif get_node_type(for_) == 'Ident':
+        assert isinstance(for_, G)
+        if for_.node == 'math_ident':
+            return get_mainarg_from_context(root, for_.children[0])
+
     elif isinstance(for_, X):
         # TODO: this has to be expanded
         if for_.tag == 'math':
@@ -150,14 +184,10 @@ def get_mainarg_from_context(root: Node, for_: Node) -> Optional[tuple[Node, X]]
     return None
 
 
-def trafo_definition_expansion(root: Node, reference_doc: Document, term_uri: str) -> Optional[list[Node]]:
-    definientia = extract_definiens(reference_doc, term_uri)
-    if not definientia:
-        print(f'P5413: No definition found for {term_uri} in {reference_doc.path}')
-        return None
-
+def trafo_definition_expansion(root: Node, reference_doc: Document, term_uri: str,
+                               definientia: list[Definiens]) -> Optional[list[Node]]:
     incomplete = [deepcopy(root)]   # trees that may still have references
-    already_created: set[str] = set()     # no need to generate anything twice
+    already_created: set[str] = set(repr(incomplete[0]))     # no need to generate anything twice
     finished = []
 
     def _find_ref(node: Node) -> Optional[Node]:
@@ -205,15 +235,20 @@ def trafo_definition_expansion(root: Node, reference_doc: Document, term_uri: st
                             print('Failed to find parent of NamedKind')
                             return None
                         pppp.parent.children[pppp.position] = G(
-                            'such_that_named_kind', [ppp, definiens.equivalent_stmt([mainarg])]
+                            'such_that_named_kind', [ppp, definiens.equivalent_stmt([(mainarg, None)])]
                         )
-                        incomplete.append(new_root)
+                    case G('term_is_property_stmt', [term, property]):
+                        pp = parents.get_parentinfo(p, skip_X=True)
+                        if pp is None:
+                            print('Failed to find parent of term_is_property_stmt')
+                            return None
+                        pp.parent.children[pp.position] = definiens.equivalent_stmt([(mainarg, term)])
                     case _:
-                        print(f'Unsupported parent type {p}')
-                        return None
+                            print(f'P5416: Unsupported parent type {p}')
+                            return None
             else:
                 # TODO
-                print(f'Unsupported term type {definiens.term_type_}')
+                print(f'P9892: Unsupported term type {definiens.term_type_}')
                 return None
 
             hashable_repr = repr(new_root)

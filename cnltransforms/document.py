@@ -2,6 +2,7 @@ import functools
 import re
 import shutil
 from pathlib import Path
+from typing import Optional, Callable
 
 from Resources.gf import GFShellRaw
 from cnltransforms.gfxml import parse_shtml, get_gfxml_string, sentence_tokenize, Node, linearize_mtree_contents, \
@@ -19,8 +20,12 @@ def get_shell(lang: str):
     return shell
 
 
+def no_filter(input: list[Node]) -> list[Node]:
+    return input
+
+
 class Document:
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, readings_filter: Callable[[list[Node]], list[Node]] = no_filter):
         self.path = path
         self.shell = get_shell(path.name.split('.')[-2])
         self.shtml = parse_shtml(path)
@@ -28,13 +33,14 @@ class Document:
 
         sentence_strs = sentence_tokenize(self.string)
         self.sentences = [
-            Sentence(sentence_str, self.shell, self.recovery_info)
+            Sentence(sentence_str, self.shell, self.recovery_info, readings_filter)
             for sentence_str in sentence_strs
         ]
 
 
 class Sentence:
-    def __init__(self, string: str, shell: GFShellRaw, recovery_info):
+    def __init__(self, string: str, shell: GFShellRaw, recovery_info,
+                 readings_filter: Callable[[list[Node]], list[Node]] = no_filter):
         self.string = string
         self.shell = shell
         self.recovery_info = recovery_info
@@ -53,7 +59,7 @@ class Sentence:
         # put space before last period
         string = re.sub(r'\.([0-9m<>/]*)', r' . \1', string)
 
-        cmd = f'p -cat=StmtFin "{string}"'
+        cmd = f'p -cat=Sentence "{string}"'
         # print(f'Command: {cmd}')
         shell_output = shell.handle_command(cmd)
         assert shell_output
@@ -64,10 +70,11 @@ class Sentence:
             print(f'Command: {cmd}')
             return
 
-        self.trees: list[Node] = [
+        tree_candidates: list[Node] = [
             build_tree(recovery_info, tree_str)
             for tree_str in shell_output.split('\n')
         ]
+        self.trees = readings_filter(tree_candidates)
         # print(self.trees)
 
 
