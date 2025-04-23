@@ -13,6 +13,7 @@ resource MDictEng = open SyntaxEng, ParadigmsEng in {
         dict_proposition_N: N = mkN "proposition";
 
         dict_positive_A: A = mkA "positive";
+        dict_even_A: A = mkA "even";
         dict_finite_A: A = mkA "finite";
         dict_divisible_A: A = mkA "divisible";
         dict_countable_A: A = mkA "countable";

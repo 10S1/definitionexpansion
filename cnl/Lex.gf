@@ -17,6 +17,7 @@ abstract Lex = open Core in {
         lex_proposition : PreKind;
 
         lex_finite : Property;
+        lex_even : Property;
         lex_positive : Property;
         lex_divisible : Property;
         lex_countable : Property;

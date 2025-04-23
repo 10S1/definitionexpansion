@@ -99,4 +99,4 @@ def run(example: str):
 if __name__ == '__main__':
     import sys
     # run(sys.argv[1])
-    run('defexp2')
+    run('defexp1')

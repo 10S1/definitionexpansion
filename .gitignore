@@ -1,3 +1,6 @@
+*.dot
+*.png
+.idea
 *.gfo
 GEN_grammar_abstr.gf
 GEN_grammar_concr.gf
