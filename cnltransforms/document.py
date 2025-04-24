@@ -83,3 +83,9 @@ def linearize_tree(tree: Node, shell: GFShellRaw) -> str:
     recovery_info, gf_input = tree.to_gf()
     gf_lin = shell.handle_command(f'linearize {gf_input}')
     return final_recovery(gf_lin, recovery_info)
+
+
+if __name__ == '__main__':
+    import sys
+    doc = Document(Path(sys.argv[1]))
+    print('\n---\n'.join(repr(t) for t in doc.sentences[0].trees))

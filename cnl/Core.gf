@@ -40,6 +40,7 @@ abstract Core = Xml ** {
         prekind_to_kind : PreKind -> Kind;
         wrapped_prekind : Tag -> PreKind -> PreKind;
         name_kind : Kind -> Ident -> NamedKind;
+        wrapped_named_kind : Tag -> NamedKind -> NamedKind;
         such_that_named_kind : NamedKind -> Stmt -> NamedKind;
         such_that_named_kind_v1 : NamedKind -> Stmt -> NamedKind;
         such_that_named_kind_v2 : NamedKind -> Stmt -> NamedKind;
@@ -56,6 +57,12 @@ abstract Core = Xml ** {
         -- quantifications
         existential_quantification : Quantification;
         existential_quantification_v1 : Quantification;
+
+        -- "every" (sg) and "all" (pl) cannot be used interchangeably
+        -- specifically, we can say "for all integers x, y",
+        -- but not "for every integer x, y"
+        universal_quantification_sg : Quantification;
+        universal_quantification_pl : Quantification;
 
         -- properties
         wrapped_property : Tag -> Property -> Property;

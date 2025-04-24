@@ -6,6 +6,7 @@ abstract Lex = open Core in {
 
         lex_integer : PreKind;
         lex_path : PreKind;
+        lex_walk : PreKind;
         lex_sequence : PreKind;
         lex_edge : PreKind;
         lex_node : PreKind;

@@ -47,6 +47,7 @@ incomplete concrete CoreFunctor of Core = XmlConcr ** open Syntax, Grammar, Symb
         prekind_to_kind pk = mkKind pk;
         wrapped_prekind tag pk = WRAP_CN tag pk;
         name_kind k i = mkCN (mkCN k.cn (symb i.s)) k.adv;
+        wrapped_named_kind tag nk = WRAP_CN tag nk;
         property_prekind pp pk = mkCN pp pk;
         kind_with_arg k am t = {
             cn = k.cn;
@@ -65,6 +66,8 @@ incomplete concrete CoreFunctor of Core = XmlConcr ** open Syntax, Grammar, Symb
 
         -- quantifications
         existential_quantification = a_Det;
+
+        universal_quantification_sg = every_Det;
 
         -- properties
         wrapped_property tag p = WRAP_AP tag p;

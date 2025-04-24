@@ -2,7 +2,7 @@ concrete CoreEng of Core =
     CoreFunctor with 
         (Syntax=SyntaxEng), (Grammar=GrammarEng), (Symbolic=SymbolicEng), (Extend=ExtendEng),
         (AddedTags=AddedTagsEng)
-** open ParadigmsEng, ResEng, Prelude, StructuralEng in {
+** open ParadigmsEng, ResEng, Prelude, StructuralEng, MorphoEng in {
     oper
         _call_V2 : V2 = mkV2 (mkV "call");
         _say_V2 : V2 = mkV2 (mkV "say" "said" "said");
@@ -27,6 +27,7 @@ concrete CoreEng of Core =
 
 
         existential_quantification_v1 = someSg_Det;
+        universal_quantification_pl = mkDeterminer plural "all";
 
         stmt_for_term stmt term = lin S {s = stmt.s ++ (PrepNP (mkPrep "for") term).s};
 

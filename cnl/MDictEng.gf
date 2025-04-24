@@ -2,6 +2,7 @@ resource MDictEng = open SyntaxEng, ParadigmsEng in {
     oper
         dict_integer_N: N = mkN "integer";
         dict_path_N: N = mkN "path";
+        dict_walk_N: N = mkN "walk";
         dict_sequence_N: N = mkN "sequence";
         dict_edge_N: N = mkN "edge";
         dict_node_N: N = mkN "node";

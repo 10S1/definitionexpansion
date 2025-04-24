@@ -165,6 +165,12 @@ def get_gfxml_string(shtml: etree._ElementTree) -> tuple[list[X], str]:
     nodes: list[X] = []
 
     def _recurse(node: etree._Element):
+        if isinstance(node, etree._Comment):
+            return
+        if node.attrib.get('data-ftml-invisible', '') == 'true':
+            if node.tail:
+                strings.append(node.tail)
+            return
         tag_num = len(nodes)
         if node.tag.endswith('math'):
             # don't recurse into math nodes - place them as-is
@@ -258,6 +264,19 @@ def sentence_tokenize(text: str) -> list[str]:
         for tag in reversed(open_tags):
             if tag not in close_tags:
                 sentence = sentence + f'</ {tag} >'
+
+        # strip away outer tags
+        # e.g. < 0 > < 1 > </ 1 > Words </ 0 > -> Words
+        while True:
+            m = (
+                re.match(r'^\s*(< (?P<i>[0-9]+) >)(?P<sentence>.*?)(</ (?P=i) >\s*)$', sentence)
+                or re.match(r'^\s*(< (?P<i>[0-9]+) >)\s*(</ (?P=i) >)\s*(?P<sentence>.*?)$', sentence)
+                or re.match(r'^(?P<sentence>.*?)\s*(< (?P<i>[0-9]+) >)\s*(</ (?P=i) >)\s*$', sentence)
+            )
+            if m:
+                sentence = m.group('sentence')
+            else:
+                break
 
 
         # post-processing
