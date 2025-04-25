@@ -5,12 +5,14 @@ abstract Lex = open Core in {
         lex_argmark_from : ArgMarker;
 
         lex_integer : PreKind;
+        lex_element : PreKind;
         lex_path : PreKind;
         lex_walk : PreKind;
         lex_sequence : PreKind;
         lex_edge : PreKind;
         lex_node : PreKind;
         lex_state : PreKind;
+        lex_transition : PreKind;
         lex_pair : PreKind;
         lex_set : PreKind;
         lex_model : PreKind;

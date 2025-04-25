@@ -76,6 +76,7 @@ abstract Core = Xml ** {
 
         term_has_nkind_stmt : Term -> NamedKind -> Stmt;
         term_is_property_stmt : Term -> Property -> Stmt;
+        term_is_term_stmt : Term -> Term -> Stmt;
 
         let_kind_stmt : Ident -> NamedKind -> Stmt;    -- in practice, NamedKind should be anonymous, but Kind is too restricted (e.g. no "such that")
 

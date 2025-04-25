@@ -8,7 +8,9 @@ from typing import Optional, Callable, Literal, Protocol
 from re import match as re_match
 
 from cnltransforms.document import Document
+from cnltransforms.extstruct import ExtStruct
 from cnltransforms.gfxml import Node, X, G
+from cnltransforms.mathfunctions import get_function_args, apply
 from cnltransforms.treeutils import parent_dict, find_nodes, get_node_type
 
 
@@ -257,4 +259,92 @@ def trafo_definition_expansion(root: Node, reference_doc: Document, term_uri: st
             already_created.add(hashable_repr)
             incomplete.append(new_root)
 
+    return finished
+
+
+def trafo_pushout(root: Node, extstruct: ExtStruct) -> Optional[list[Node]]:
+    incomplete = [deepcopy(root)]   # trees that may still have references
+    already_created: set[str] = set(repr(incomplete[0]))     # no need to generate anything twice
+    finished = []
+
+    def _find_ref(node: Node) -> Optional[X]:
+        return next(find_nodes(
+            node,
+            lambda n: isinstance(n, X) and n.attrs.get('data-ftml-head') in extstruct.assignments,
+            search_matches=False
+        ), None)
+
+    while incomplete:
+        node = incomplete.pop()
+        reference = _find_ref(node)
+        if not reference:
+            finished.append(node)
+            continue
+
+        # print('??', reference.attrs['data-ftml-head'])
+
+        for new_val in extstruct.get_assignment_as_formula(reference.attrs['data-ftml-head']):
+            # print('new_val', new_val)
+            new_root = deepcopy(node)
+            parents = parent_dict(new_root)
+            reference = _find_ref(new_root)   # we're working in a copy
+            assert reference is not None
+
+            if reference.tag == 'mrow':
+                args = get_function_args(reference)
+                # print('replace')
+                if args:
+                    parents.replace_node_in_parent(reference, apply(new_val, args))
+                else:
+                    parents.replace_node_in_parent(reference, new_val)
+            else:
+                assert reference.tag == 'span' and len(reference.children) == 1
+
+                def get_child_type(n: Node) -> str:
+                    if isinstance(n, X):
+                        assert len(n.children) == 1 and n.tag == 'span'
+                        return get_child_type(n.children[0])
+                    assert isinstance(n, G)
+                    return get_node_type(n)
+
+                cat = get_child_type(reference.children[0])
+
+                if cat == 'PreKind':
+                    new_pk = X(
+                        'span',
+                        [G('lex_element')],
+                        attrs={
+                            'data-ftml-head': 'https://mathhub.info?a=smglom/sets&amp;p=mod&amp;m=set&amp;s=element',
+                            'data-ftml-term': 'OMID',
+                        },
+                        wrapfun='wrapped_prekind'
+                    )
+                    parents.replace_node_in_parent(reference, new_pk)
+
+                    parent_k = parents.filter_parent(new_pk, lambda n: get_node_type(n) == 'Kind')
+                    print('PK', parent_k)
+                    parents.replace_node_in_parent(
+                        parent_k,
+                        G('kind_with_arg', [
+                            parent_k,
+                            G('lex_argmark_of'),
+                            G('math_term', [
+                                X('math', [new_val])
+                            ])
+                        ])
+                    )
+                else:
+                    print('P9418: Unsupported child type', cat)
+
+
+
+
+            hashable_repr = repr(new_root)
+            if hashable_repr in already_created:
+                continue
+            already_created.add(hashable_repr)
+            # print('push')
+            incomplete.append(new_root)
+
+    print('FINISHED', finished)
     return finished

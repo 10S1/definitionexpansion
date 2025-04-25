@@ -92,6 +92,7 @@ incomplete concrete CoreFunctor of Core = XmlConcr ** open Syntax, Grammar, Symb
 
         term_has_nkind_stmt t nk = mkS (mkCl t have_V2 (DetCN a_Det nk));
         term_is_property_stmt t p = mkS (mkCl t p);
+        term_is_term_stmt t1 t2 = mkS (mkCl t1 t2);
 
         let_kind_stmt i nk = lin S { s = (ImpP3 (symb i.s) (mkVP nk)).s };
 

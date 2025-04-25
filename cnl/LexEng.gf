@@ -5,12 +5,14 @@ concrete LexEng of Lex = CoreEng ** open MDictEng, ParadigmsEng, SyntaxEng, Gram
         lex_argmark_from = mkPrep "from";
 
         lex_integer = mkCN dict_integer_N;
+        lex_element = mkCN dict_element_N;
         lex_path = mkCN dict_path_N;
         lex_walk = mkCN dict_walk_N;
         lex_sequence = mkCN dict_sequence_N;
         lex_edge = mkCN dict_edge_N;
         lex_node = mkCN dict_node_N;
         lex_state = mkCN dict_state_N;
+        lex_transition = mkCN dict_transition_N;
         lex_pair = mkCN dict_pair_N;
         lex_set = mkCN dict_set_N;
         lex_model = mkCN dict_model_N;

@@ -66,6 +66,11 @@ class GFShellRaw(object):
         self.gf_shell.kill()
         os.fdopen(self.gfoutfd).close()  # TODO: Why do I need this?
 
+def handle_parse_output(output: str) -> list[str]:
+    if output.startswith('The parser failed at token'):
+        return []
+    return output.splitlines()
+
 
 if __name__ == "__main__":
     from distutils.spawn import find_executable

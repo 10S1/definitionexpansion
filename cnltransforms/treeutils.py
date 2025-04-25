@@ -28,6 +28,14 @@ class ParentStructure(dict[Node, Optional[ParentInfo]]):
             parent_info = self[parent_info.parent]
         return None
 
+    def replace_node_in_parent(self, node: Node, new_node: Node):
+        parent_info = self[node]
+        if parent_info is None:
+            raise ValueError('Node has no parent')
+        parent_info.parent.children[parent_info.position] = new_node
+        self[new_node] = parent_info
+        del self[node]
+
     def get_parentinfo(self, node: Node, skip_X: bool = False) -> Optional[ParentInfo]:
         if not skip_X:
             return self[node]

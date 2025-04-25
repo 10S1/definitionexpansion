@@ -62,8 +62,10 @@ class X(Node):
         a, b = f'<{self.tag} ' + ' '.join(f'{k}="{v}"' for k, v in self.attrs.items()) + '>', f'</{self.tag}>'
         for child in self.children:
             da, db = child.pure_node_strings()
-            a += da
-            b = db + b
+            a += da + db
+            # was:
+            #   a += da
+            #   b = db + b
         return a, b
 
     def __repr__(self):
@@ -71,11 +73,12 @@ class X(Node):
 
     def _to_gf(self, _tags: list[tuple[str, str]]) -> str:
         tag_num = len(_tags)
-        # if self.wrapfun is None:
         if self.tag == 'math':
             _tags.append(self.pure_node_strings())
             return f'(wrap_math (tag {tag_num}) epsilon)'
         else:
+            # if self.wrapfun is None:
+            #     raise RuntimeError('wrapfun must be set')
             _tags.append((f'<{self.tag} ' + ' '.join(f'{k}="{v}"' for k, v in self.attrs.items()) + '>', f'</{self.tag}>'))
             return f'({self.wrapfun} (tag {tag_num}) {" ".join(child._to_gf(_tags) for child in self.children)})'
 

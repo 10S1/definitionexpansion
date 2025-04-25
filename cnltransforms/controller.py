@@ -5,13 +5,15 @@ from pathlib import Path
 from typing import Optional, Iterator
 
 from cnltransforms.document import Document, get_shell, linearize_tree
+from cnltransforms.extstruct import ExtStruct
 from cnltransforms.filters import definiendum_filter
 from cnltransforms.gfxml import Node, X
 from cnltransforms.htmldocu import new_doc, push_html, push_tree, details, set_default_shell, push_sentence_tree
-from cnltransforms.trafos import trafo_definition_expansion, extract_definiens
+from cnltransforms.trafos import trafo_definition_expansion, extract_definiens, trafo_pushout
 
 LOG_DIR = Path('/tmp/cnltransform-logs')
 EXAMPLES_DIR = Path(__file__).parent.parent / 'sHTML' / 'Examples'
+OVERHEAD_EXAMPLES = Path(__file__).parent.parent / 'sHTML' / 'Overhead' / 'All_examples'
 
 def readings_filter(input: list[Node]) -> list[Node]:
     return definiendum_filter(input)
@@ -51,6 +53,14 @@ class DefiExpansion(Trafo):
         return trafo_definition_expansion(tree, self.reference_doc, self.term_uri, self.definientia)
 
 
+class Pushout(Trafo):
+    def __init__(self, mapping: ExtStruct):
+        self.mapping = mapping
+
+    def apply(self, tree: Node) -> Optional[list[Node]]:
+        return trafo_pushout(tree, self.mapping)
+
+
 def run(example: str):
     LOG_DIR.mkdir(exist_ok=True)
     with new_doc(LOG_DIR / f'{example}.html'):
@@ -73,6 +83,11 @@ def run(example: str):
                 for tree in sentence.trees:
                     color_tree(tree, 'yellow')
             trafo = DefiExpansion(ref_doc, term_uri)
+        elif example == 'pushout1':
+            input_doc = Document(OVERHEAD_EXAMPLES / 'pushout' / 'quiver-walk-to-nts-derivation' / 'quiver-walk.en.xhtml', readings_filter)
+            set_default_shell(input_doc.shell)
+            ref_doc = ExtStruct(OVERHEAD_EXAMPLES / 'pushout' / 'quiver-walk-to-nts-derivation' / 'nts-derivation.en.xhtml')
+            trafo = Pushout(ref_doc)
 
 
         push_html('<h1>Input</h1>')
@@ -99,4 +114,4 @@ def run(example: str):
 if __name__ == '__main__':
     import sys
     # run(sys.argv[1])
-    run('defexp1')
+    run('pushout1')
