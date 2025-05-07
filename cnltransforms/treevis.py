@@ -16,7 +16,14 @@ def tree_to_dot(g: Node, no_attrs: bool = False) -> str:
     def traverse(n: Node) -> None:
         extra = ''
         if hasattr(n, ':color'):
-            extra = f', fillcolor="{getattr(n, ":color")}", style=filled'
+            style = getattr(n, ':style') if hasattr(n, ':style') else 'filled'
+            fillcolor = getattr(n, ":color")
+            if style == 'radial':
+                fillcolor = f'white:{fillcolor}'
+            elif style == 'mystriped':
+                fillcolor = f'{fillcolor}:white:{fillcolor}'
+                style = 'filled'
+            extra = f', fillcolor="{fillcolor}", style={style}'
         if isinstance(n, X):
             if n.tag.startswith('?'):
                 l(f'  n{id(n)} [label="<{n.tag}>", shape=diamond, fillcolor="lightgreen", style=filled]')
@@ -84,7 +91,13 @@ def tree_to_qtree(g: Node) -> str:
 
 
 def dot_to_svg(dot: str) -> str:
-    return subprocess.run(['dot', '-Tsvg'], input=dot, text=True, capture_output=True).stdout
+    result = subprocess.run(['dot', '-Tsvg'], input=dot, text=True, capture_output=True)
+    if result.returncode != 0:
+        with open('/tmp/out.dot', 'w') as f:
+            f.write(dot)
+        raise ValueError(f'Error running dot (/tmp/out.dot): {result.stderr}')
+    return result.stdout
+    # return subprocess.run(['dot', '-Tsvg'], input=dot, text=True, capture_output=True).stdout
 
 if __name__ == '__main__':
     import sys

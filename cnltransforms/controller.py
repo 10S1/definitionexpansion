@@ -1,14 +1,13 @@
 import abc
-import dataclasses
-from collections.abc import Iterable
 from pathlib import Path
-from typing import Optional, Iterator
+from typing import Optional
 
-from cnltransforms.document import Document, get_shell, linearize_tree
+from cnltransforms.document import Document, linearize_tree
 from cnltransforms.extstruct import ExtStruct
 from cnltransforms.filters import definiendum_filter
 from cnltransforms.gfxml import Node, X
 from cnltransforms.htmldocu import new_doc, push_html, push_tree, details, set_default_shell, push_sentence_tree
+from cnltransforms.simplify import basic_simplify
 from cnltransforms.trafos import trafo_definition_expansion, extract_definiens, trafo_pushout
 
 LOG_DIR = Path('/tmp/cnltransform-logs')
@@ -19,11 +18,13 @@ def readings_filter(input: list[Node]) -> list[Node]:
     return definiendum_filter(input)
 
 
-def color_tree(tree: Node, color: str):
+def color_tree(tree: Node, color: str, style: Optional[str] = None):
     """Color the tree with the given color."""
     setattr(tree, ':color', color)
+    if style:
+        setattr(tree, ':style', style)
     for child in tree.children:
-        color_tree(child, color)
+        color_tree(child, color, style)
 
 
 class Trafo(abc.ABC):
@@ -70,6 +71,12 @@ def run(example: str):
             ref_doc = Document(EXAMPLES_DIR / 'definitions' / 'positive-integer.en.xhtml', readings_filter)
             print('\n\n'.join(repr(t) for t in ref_doc.sentences[0].trees))
             term_uri = 'https://stexmmt.mathhub.info/:sTeX?a=smglom/arithmetics&p=mod&m=intarith&s=positive'
+            for sentence in input_doc.sentences:
+                for tree in sentence.trees:
+                    color_tree(tree, 'darkturquoise')
+            for sentence in ref_doc.sentences:
+                for tree in sentence.trees:
+                    color_tree(tree, 'indianred', style='radial')
             trafo = DefiExpansion(ref_doc, term_uri)
         elif example == 'defexp2':
             input_doc = Document(EXAMPLES_DIR / 'Statements' / 'de-02-input.en.xhtml', readings_filter)
@@ -110,8 +117,8 @@ def run(example: str):
                             for t in transformed:
                                 print(t)
                                 push_sentence_tree(t)
+                                push_sentence_tree(basic_simplify(t))
 
 if __name__ == '__main__':
-    import sys
     # run(sys.argv[1])
-    run('pushout1')
+    run('defexp1')

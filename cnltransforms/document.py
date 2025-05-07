@@ -1,6 +1,7 @@
 import functools
 import re
 import shutil
+from copy import deepcopy
 from pathlib import Path
 from typing import Optional, Callable
 
@@ -79,6 +80,7 @@ class Sentence:
 
 
 def linearize_tree(tree: Node, shell: GFShellRaw) -> str:
+    tree = deepcopy(tree)
     linearize_mtree_contents(lambda s: shell.handle_command(f'linearize {s}'), tree)
     recovery_info, gf_input = tree.to_gf()
     gf_lin = shell.handle_command(f'linearize {gf_input}')
