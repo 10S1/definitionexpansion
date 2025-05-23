@@ -10,5 +10,5 @@
 
 Here is a screenshot:
 
-![Screenshot](/img/screenshot.png?raw=true)
+![Screenshot](/cnltransforms/img/screenshot.png?raw=true)
 
