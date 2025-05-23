@@ -10,5 +10,5 @@
 
 Here is a screenshot:
 
-![Screenshot](https://raw.githubusercontent.com/10S1/definitionexpansion/refs/heads/main/cnltransforms/img/screenshot.png)
+![Screenshot](/img/screenshot.png?raw=true)
 
