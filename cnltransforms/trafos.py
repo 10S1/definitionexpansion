@@ -284,6 +284,11 @@ def trafo_pushout(root: Node, extstruct: ExtStruct) -> Optional[list[Node]]:
         # print('??', reference.attrs['data-ftml-head'])
 
         for new_val in extstruct.get_assignment_as_formula(reference.attrs['data-ftml-head']):
+            def _rec(node: Node):
+                setattr(node, ':isinserted', True)
+                for child in node.children:
+                    _rec(child)
+
             # print('new_val', new_val)
             new_root = deepcopy(node)
             parents = parent_dict(new_root)

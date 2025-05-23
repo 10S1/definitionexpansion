@@ -1,7 +1,7 @@
 """
 Code for removing "wrong" trees.
 """
-from cnltransforms.gfxml import Node, X
+from cnltransforms.gfxml import Node, X, G
 from cnltransforms.treeutils import parent_dict, find_nodes, get_node_type
 
 
@@ -52,6 +52,31 @@ def definiendum_filter(
     return results
 
 
+def _is_invisible_node(n: Node) -> bool:
+    if isinstance(n, G):
+        if n.node == 'prekind_to_kind':
+            return True
+        if n.node == 'name_kind' and isinstance(c1 := n.children[1], G) and c1.node == 'no_ident':
+            return True
+
+    return False
+
+def tag_around_invisible_node_filter(
+        trees: list[Node],
+) -> list[Node]:
+    results: list[Node] = []
+    for tree in trees:
+        parents = parent_dict(tree)
+        ignore = False
+        for inv in find_nodes(tree, _is_invisible_node):
+            parent = parents.get_parent(inv, skip_X=False)
+            if parent and isinstance(parent, X):
+                ignore = True
+                break
+        if not ignore:
+            results.append(tree)
+    return results
 
 
-
+def default_readings_filter(input: list[Node]) -> list[Node]:
+    return tag_around_invisible_node_filter(definiendum_filter(input))

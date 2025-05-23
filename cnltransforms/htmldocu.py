@@ -60,7 +60,7 @@ def push_tree(tree: Node):
     with details('Tree'):
         push_html('<pre>' + repr(tree) + '</pre>')
         push_html('<div>')
-        print('>>>', tree)
+        # print('>>>', tree)
         push_html(dot_to_svg(tree_to_dot(tree, no_attrs=True)))
         push_html('</div>')
 

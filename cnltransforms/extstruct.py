@@ -3,8 +3,10 @@ from pathlib import Path
 from lxml import etree
 
 from cnltransforms.document import get_shell
+from cnltransforms.filters import default_readings_filter
 from cnltransforms.gf import handle_parse_output
 from cnltransforms.gfxml import parse_shtml, X, xify, parse_mtext_contents
+from cnltransforms.htmldocu import push_tree, push_html
 
 
 class ExtStruct:
@@ -23,12 +25,14 @@ class ExtStruct:
 
     def get_assignment_as_formula(self, symbol: str) -> list[X]:
         result : list[X] = []
-        for r in  parse_mtext_contents(
+        push_html('<h2>Assignment</h2>')
+        for r in default_readings_filter(parse_mtext_contents(
             lambda s : handle_parse_output(get_shell(self.path.name.split('.')[-2]).handle_command(
                 f'parse -cat=Stmt "{s}"'
             )),
             xify(self.assignments[symbol])
-        ):
+        )):
+            push_tree(r)
             assert isinstance(r, X)
             result.append(r)
 

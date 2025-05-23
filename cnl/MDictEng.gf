@@ -14,6 +14,7 @@ resource MDictEng = open SyntaxEng, ParadigmsEng in {
         dict_model_N: N = mkN "model";
         dict_formula_N: N = mkN "formula";
         dict_proposition_N: N = mkN "proposition";
+        dict_triple_N: N = mkN "triple";
 
         dict_positive_A: A = mkA "positive";
         dict_even_A: A = mkA "even";
@@ -22,4 +23,5 @@ resource MDictEng = open SyntaxEng, ParadigmsEng in {
         dict_countable_A: A = mkA "countable";
         dict_consistent_A: A = mkA "consistent";
         dict_derivable_A: A = mkA "derivable";
+        dict_applicable_A: A = mkA "applicable";
 }

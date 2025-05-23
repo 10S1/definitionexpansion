@@ -3,6 +3,7 @@ concrete LexEng of Lex = CoreEng ** open MDictEng, ParadigmsEng, SyntaxEng, Gram
         lex_argmark_by = mkPrep "by";
         lex_argmark_of = mkPrep "of";
         lex_argmark_from = mkPrep "from";
+        lex_argmark_in = mkPrep "in";
 
         lex_integer = mkCN dict_integer_N;
         lex_element = mkCN dict_element_N;
@@ -18,6 +19,7 @@ concrete LexEng of Lex = CoreEng ** open MDictEng, ParadigmsEng, SyntaxEng, Gram
         lex_model = mkCN dict_model_N;
         lex_formula = mkCN dict_formula_N;
         lex_proposition = mkCN dict_proposition_N;
+        lex_triple = mkCN dict_triple_N;
 
         lex_finite = mkAP dict_finite_A;
         lex_even = mkAP dict_even_A;
@@ -26,4 +28,5 @@ concrete LexEng of Lex = CoreEng ** open MDictEng, ParadigmsEng, SyntaxEng, Gram
         lex_countable = mkAP dict_countable_A;
         lex_consistent = mkAP dict_consistent_A;
         lex_derivable = mkAP dict_derivable_A;
+        lex_applicable = mkAP dict_applicable_A;
 }

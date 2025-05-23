@@ -3,6 +3,7 @@ abstract Lex = open Core in {
         lex_argmark_by : ArgMarker;
         lex_argmark_of : ArgMarker;
         lex_argmark_from : ArgMarker;
+        lex_argmark_in : ArgMarker;
 
         lex_integer : PreKind;
         lex_element : PreKind;
@@ -18,6 +19,7 @@ abstract Lex = open Core in {
         lex_model : PreKind;
         lex_formula : PreKind;
         lex_proposition : PreKind;
+        lex_triple : PreKind;
 
         lex_finite : Property;
         lex_even : Property;
@@ -26,4 +28,5 @@ abstract Lex = open Core in {
         lex_countable : Property;
         lex_consistent : Property;
         lex_derivable : Property;
+        lex_applicable : Property;
 }
