@@ -1,4 +1,4 @@
-# Flexiformal Definiton Expansion
+# PROTOTYPES: Flexiformal Definiton Expansion
 
 This repository contains implementations [definitionExpander.py] of flexiformal definition expansion (= replacing a term in a text through its definition).
 It contains a sTeX-to-sTeX version and a SHTML-to-SHTML version.
