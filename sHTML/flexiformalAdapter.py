@@ -466,5 +466,5 @@ def testExample(example_name):
     #shell = initializeGfShell()
     #trees = parseHtmltoTrees(shell, example["comprehension term reduction 1"]["comprehension"])#["statement"])
     #string = linearizeTreeToString(shell, trees[0])
-testExample("DR002")
+testExample("DR001")
 ###----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------###
