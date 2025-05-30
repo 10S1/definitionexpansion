@@ -1,3 +1,10 @@
 # Flexiformal definition expansion for sHTML (prototype)
 
-Instructions for use are [here](https://github.com/10S1/definitionexpansion/blob/main/README.md).
+### Prerequesites: 
+* Install the grammatical framework ([instructions](https://www.grammaticalframework.org/download/index-3.11.html)).
+
+### Flexiformal Definition Expansion:
+* Run definitionExpander.py for an example of flexiformal definition expansion.
+
+### Flexiformal Definition Reduction:
+* Run flexiformalAdapter.py for an example of flexiformal definition reduction.
